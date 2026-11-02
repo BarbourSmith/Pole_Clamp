@@ -65,56 +65,8 @@
               "uniqueID": "id-130",
               "ioValues": [
                 {
-                  "name": "boxBack",
-                  "ioValue": -31.5
-                },
-                {
-                  "name": "boxHalfHeight",
-                  "ioValue": 14
-                },
-                {
-                  "name": "pocketBack",
-                  "ioValue": -25
-                },
-                {
-                  "name": "pocketHalfHeight",
-                  "ioValue": 7.25
-                },
-                {
-                  "name": "pocketFront",
-                  "ioValue": -14.5
-                },
-                {
-                  "name": "vAngle",
-                  "ioValue": 36.6
-                },
-                {
-                  "name": "upperPinX",
-                  "ioValue": -5
-                },
-                {
-                  "name": "upperPinY",
-                  "ioValue": 22
-                },
-                {
-                  "name": "upperKnuckleR",
-                  "ioValue": 5.5
-                },
-                {
-                  "name": "lowerPinX",
-                  "ioValue": -7
-                },
-                {
-                  "name": "lowerPinY",
-                  "ioValue": -24
-                },
-                {
-                  "name": "lowerKnuckleR",
-                  "ioValue": 6
-                },
-                {
                   "name": "seatR",
-                  "ioValue": 14.5
+                  "ioValue": 16.7
                 },
                 {
                   "name": "thickness",
@@ -122,12 +74,28 @@
                 },
                 {
                   "name": "cornerR",
-                  "ioValue": 1.5
+                  "ioValue": 1.2
+                },
+                {
+                  "name": "pinX",
+                  "ioValue": -5.65
+                },
+                {
+                  "name": "pinY",
+                  "ioValue": 21.46
+                },
+                {
+                  "name": "knuckleR",
+                  "ioValue": 5.3
+                },
+                {
+                  "name": "seatOffset",
+                  "ioValue": 2.2
                 }
               ],
               "interpreterVersion": 1,
-              "code": "/**\n * Clamp Body (cast aluminum), in mm. Pipe center at the origin, Z along the pipe; the\n * body's side of the opening is a round seat matching the jaw, so a 29 mm pipe is held all\n * the way round. Box, arms and hinge positions measured from the top-down photo on the\n * 1/2\" mat. The box's sharp outer corners are rounded like the casting.\n */\nfunction run(\n  boxBack: number = -31.5,   // outer face of the bolt box\n  boxHalfHeight: number = 14,\n  pocketBack: number = -25,  // inner face of the bolt box (6.5 mm wall)\n  pocketHalfHeight: number = 7.25,\n  pocketFront: number = -14.5, // where the pocket opens into the seat\n  seatR: number = 14.5,      // round seat: closes on a 29 mm pipe, same as the jaw\n  vAngle: number = 36.6,     // slope of the arms' inner edges, degrees\n  upperPinX: number = -5, upperPinY: number = 22, upperKnuckleR: number = 5.5,\n  lowerPinX: number = -7, lowerPinY: number = -24, lowerKnuckleR: number = 6,\n  thickness: number = 30,    // along the pipe (listing 30, scan 28.5-28.7)\n  cornerR: number = 1.5,     // casting corner radius\n): Assembly {\n  const t = Math.tan((vAngle * Math.PI) / 180);\n  const vy = (x: number) => pocketHalfHeight + t * (x - pocketFront);\n  // Solid out to the arms, then the seat circle is cut out of it. Arm corners sit well\n  // inside the knuckle circles so the outline crosses them cleanly.\n  const outline = replicad\n    .draw([boxBack, -boxHalfHeight])\n    .lineTo([-17, -boxHalfHeight])\n    .lineTo([lowerPinX - 3, lowerPinY - 4.8])\n    .lineTo([lowerPinX + 5.8, lowerPinY - 1])\n    .lineTo([-0.7, -vy(-0.7)])\n    .lineTo([-0.7, -pocketHalfHeight - 1])\n    .lineTo([pocketFront, -pocketHalfHeight])\n    .lineTo([pocketBack, -pocketHalfHeight])\n    .lineTo([pocketBack, pocketHalfHeight])\n    .lineTo([pocketFront, pocketHalfHeight])\n    .lineTo([-1, pocketHalfHeight + 1])\n    .lineTo([-1, vy(-1)])\n    .lineTo([upperPinX + 4.5, upperPinY + 1])\n    .lineTo([upperPinX - 4, upperPinY + 3.5])\n    .lineTo([-18, boxHalfHeight])\n    .lineTo([boxBack, boxHalfHeight])\n    .close();\n  const knuckles = replicad\n    .drawCircle(upperKnuckleR).translate(upperPinX, upperPinY)\n    .fuse(replicad.drawCircle(lowerKnuckleR).translate(lowerPinX, lowerPinY));\n  const seat = replicad.drawCircle(seatR);\n  const body = outline.fuse(knuckles).cut(seat).sketchOnPlane().extrude(thickness);\n\n  // Round the box's two outer back corners, the sharp corners visible in the photos. The\n  // pocket's inner corners stay sharp so the bolt head seats flat against the back wall.\n  const corners = [[boxBack, boxHalfHeight], [boxBack, -boxHalfHeight]];\n  const isCorner = (e: any) => {\n    const c = e.boundingBox.center;\n    return corners.some(([x, y]) => Math.abs(c[0] - x) < 0.01 && Math.abs(c[1] - y) < 0.01);\n  };\n  try {\n    return new Assembly({ geometry: body.fillet((e: any) => (isCorner(e) ? cornerR : null)) });\n  } catch (err) {\n    console.warn(\"Corner rounding failed; returning sharp corners:\", err);\n    return new Assembly({ geometry: body });\n  }\n}\n",
-              "compiledCode": "\"use strict\";\n/**\n * Clamp Body (cast aluminum), in mm. Pipe center at the origin, Z along the pipe; the\n * body's side of the opening is a round seat matching the jaw, so a 29 mm pipe is held all\n * the way round. Box, arms and hinge positions measured from the top-down photo on the\n * 1/2\" mat. The box's sharp outer corners are rounded like the casting.\n */\nfunction run(boxBack = -31.5, // outer face of the bolt box\nboxHalfHeight = 14, pocketBack = -25, // inner face of the bolt box (6.5 mm wall)\npocketHalfHeight = 7.25, pocketFront = -14.5, // where the pocket opens into the seat\nseatR = 14.5, // round seat: closes on a 29 mm pipe, same as the jaw\nvAngle = 36.6, // slope of the arms' inner edges, degrees\nupperPinX = -5, upperPinY = 22, upperKnuckleR = 5.5, lowerPinX = -7, lowerPinY = -24, lowerKnuckleR = 6, thickness = 30, // along the pipe (listing 30, scan 28.5-28.7)\ncornerR = 1.5) {\n    const t = Math.tan((vAngle * Math.PI) / 180);\n    const vy = (x) => pocketHalfHeight + t * (x - pocketFront);\n    // Solid out to the arms, then the seat circle is cut out of it. Arm corners sit well\n    // inside the knuckle circles so the outline crosses them cleanly.\n    const outline = replicad\n        .draw([boxBack, -boxHalfHeight])\n        .lineTo([-17, -boxHalfHeight])\n        .lineTo([lowerPinX - 3, lowerPinY - 4.8])\n        .lineTo([lowerPinX + 5.8, lowerPinY - 1])\n        .lineTo([-0.7, -vy(-0.7)])\n        .lineTo([-0.7, -pocketHalfHeight - 1])\n        .lineTo([pocketFront, -pocketHalfHeight])\n        .lineTo([pocketBack, -pocketHalfHeight])\n        .lineTo([pocketBack, pocketHalfHeight])\n        .lineTo([pocketFront, pocketHalfHeight])\n        .lineTo([-1, pocketHalfHeight + 1])\n        .lineTo([-1, vy(-1)])\n        .lineTo([upperPinX + 4.5, upperPinY + 1])\n        .lineTo([upperPinX - 4, upperPinY + 3.5])\n        .lineTo([-18, boxHalfHeight])\n        .lineTo([boxBack, boxHalfHeight])\n        .close();\n    const knuckles = replicad\n        .drawCircle(upperKnuckleR).translate(upperPinX, upperPinY)\n        .fuse(replicad.drawCircle(lowerKnuckleR).translate(lowerPinX, lowerPinY));\n    const seat = replicad.drawCircle(seatR);\n    const body = outline.fuse(knuckles).cut(seat).sketchOnPlane().extrude(thickness);\n    // Round the box's two outer back corners, the sharp corners visible in the photos. The\n    // pocket's inner corners stay sharp so the bolt head seats flat against the back wall.\n    const corners = [[boxBack, boxHalfHeight], [boxBack, -boxHalfHeight]];\n    const isCorner = (e) => {\n        const c = e.boundingBox.center;\n        return corners.some(([x, y]) => Math.abs(c[0] - x) < 0.01 && Math.abs(c[1] - y) < 0.01);\n    };\n    try {\n        return new Assembly({ geometry: body.fillet((e) => (isCorner(e) ? cornerR : null)) });\n    }\n    catch (err) {\n        console.warn(\"Corner rounding failed; returning sharp corners:\", err);\n        return new Assembly({ geometry: body });\n    }\n}\n"
+              "code": "/**\n * Clamp Body (cast aluminum), in mm. Pipe center at the origin, Z along the pipe, hinge\n * pins on a vertical line. Every outline point below was measured through the top-down\n * photo with its camera solved from the 1/2\" mat grid (1.8 px RMS), on the body's top face\n * 30 mm above the mat, so perspective and lens scale are taken out. The round seat is the\n * circle fitted to the seat edge (16.7 mm radius, 0.27 mm RMS); a 29 mm pipe rests against\n * its back, so its center sits seatOffset behind the pipe's.\n */\nconst OUTLINE: number[][] = [ // counterclockwise from the box's lower back corner\n  [-28.71, -13.2],  // box, lower back corner\n  [-17.94, -13.49], // end of the box's bottom edge\n  [-14.72, -16.78], // lower arm, outer edge\n  [-11.5, -20.07],\n  [-10.28, -20.82], // meets the lower knuckle\n  [-4.5, -14.42],   // lower arm inner edge, where it leaves the seat\n  [-6.52, -13.89],\n  [-14.55, -7.0],   // pocket's lower front corner\n  [-23.1, -7.0],    // pocket back\n  [-23.1, 7.0],\n  [-14.55, 7.0],    // pocket's upper front corner\n  [-5.53, 15.26],   // upper arm inner edge, where it leaves the seat\n  [-3.7, 16.9],     // (measured -3.48, 16.54; nudged inside the knuckle to avoid a sliver)\n  [-10.18, 22.31],  // upper arm, outer edge, meets the upper knuckle\n  [-11.86, 18.74],\n  [-17.07, 13.36],  // end of the box's top edge\n  [-28.71, 13.2],   // box, upper back corner\n];\n\nfunction run(\n  pinX: number = -5.65,      // both hinge pins, measured 42.9 mm apart\n  pinY: number = 21.46,      // upper pin at +pinY, lower at -pinY\n  knuckleR: number = 5.3,\n  seatR: number = 16.7,\n  seatOffset: number = 2.2,  // seat center behind (+X of) the pipe center: seatR - pipe radius\n  thickness: number = 30,    // along the pipe (listing 30, scan 28.5-28.7)\n  cornerR: number = 1.2,     // box's outer back corner radius, from the photo\n): Assembly {\n  let pen = replicad.draw(OUTLINE[0]);\n  for (const p of OUTLINE.slice(1)) pen = pen.lineTo(p);\n  const knuckles = replicad.drawCircle(knuckleR).translate(pinX, pinY)\n    .fuse(replicad.drawCircle(knuckleR).translate(pinX, -pinY));\n  const seat = replicad.drawCircle(seatR).translate(seatOffset, 0);\n  const body = pen.close().fuse(knuckles).cut(seat).sketchOnPlane().extrude(thickness);\n\n  // Round the box's two outer back corners as in the photo.\n  const corners = [OUTLINE[0], OUTLINE[OUTLINE.length - 1]];\n  const isCorner = (e: any) => {\n    const c = e.boundingBox.center;\n    return corners.some(([x, y]) => Math.abs(c[0] - x) < 0.01 && Math.abs(c[1] - y) < 0.01);\n  };\n  try {\n    return new Assembly({ geometry: body.fillet((e: any) => (isCorner(e) ? cornerR : null)) });\n  } catch (err) {\n    console.warn(\"Corner rounding failed; returning sharp corners:\", err);\n    return new Assembly({ geometry: body });\n  }\n}\n",
+              "compiledCode": "\"use strict\";\n/**\n * Clamp Body (cast aluminum), in mm. Pipe center at the origin, Z along the pipe, hinge\n * pins on a vertical line. Every outline point below was measured through the top-down\n * photo with its camera solved from the 1/2\" mat grid (1.8 px RMS), on the body's top face\n * 30 mm above the mat, so perspective and lens scale are taken out. The round seat is the\n * circle fitted to the seat edge (16.7 mm radius, 0.27 mm RMS); a 29 mm pipe rests against\n * its back, so its center sits seatOffset behind the pipe's.\n */\nconst OUTLINE = [\n    [-28.71, -13.2], // box, lower back corner\n    [-17.94, -13.49], // end of the box's bottom edge\n    [-14.72, -16.78], // lower arm, outer edge\n    [-11.5, -20.07],\n    [-10.28, -20.82], // meets the lower knuckle\n    [-4.5, -14.42], // lower arm inner edge, where it leaves the seat\n    [-6.52, -13.89],\n    [-14.55, -7.0], // pocket's lower front corner\n    [-23.1, -7.0], // pocket back\n    [-23.1, 7.0],\n    [-14.55, 7.0], // pocket's upper front corner\n    [-5.53, 15.26], // upper arm inner edge, where it leaves the seat\n    [-3.7, 16.9], // (measured -3.48, 16.54; nudged inside the knuckle to avoid a sliver)\n    [-10.18, 22.31], // upper arm, outer edge, meets the upper knuckle\n    [-11.86, 18.74],\n    [-17.07, 13.36], // end of the box's top edge\n    [-28.71, 13.2], // box, upper back corner\n];\nfunction run(pinX = -5.65, // both hinge pins, measured 42.9 mm apart\npinY = 21.46, // upper pin at +pinY, lower at -pinY\nknuckleR = 5.3, seatR = 16.7, seatOffset = 2.2, // seat center behind (+X of) the pipe center: seatR - pipe radius\nthickness = 30, // along the pipe (listing 30, scan 28.5-28.7)\ncornerR = 1.2) {\n    let pen = replicad.draw(OUTLINE[0]);\n    for (const p of OUTLINE.slice(1))\n        pen = pen.lineTo(p);\n    const knuckles = replicad.drawCircle(knuckleR).translate(pinX, pinY)\n        .fuse(replicad.drawCircle(knuckleR).translate(pinX, -pinY));\n    const seat = replicad.drawCircle(seatR).translate(seatOffset, 0);\n    const body = pen.close().fuse(knuckles).cut(seat).sketchOnPlane().extrude(thickness);\n    // Round the box's two outer back corners as in the photo.\n    const corners = [OUTLINE[0], OUTLINE[OUTLINE.length - 1]];\n    const isCorner = (e) => {\n        const c = e.boundingBox.center;\n        return corners.some(([x, y]) => Math.abs(c[0] - x) < 0.01 && Math.abs(c[1] - y) < 0.01);\n    };\n    try {\n        return new Assembly({ geometry: body.fillet((e) => (isCorner(e) ? cornerR : null)) });\n    }\n    catch (err) {\n        console.warn(\"Corner rounding failed; returning sharp corners:\", err);\n        return new Assembly({ geometry: body });\n    }\n}\n"
             },
             {
               "atomType": "Add-BOM-Tag",
@@ -259,15 +227,15 @@
                 },
                 {
                   "name": "pinX",
-                  "ioValue": -7
+                  "ioValue": -5.65
                 },
                 {
                   "name": "pinY",
-                  "ioValue": -24
+                  "ioValue": -21.46
                 },
                 {
                   "name": "knuckleR",
-                  "ioValue": 6
+                  "ioValue": 5.3
                 },
                 {
                   "name": "slotWidth",
@@ -275,7 +243,7 @@
                 },
                 {
                   "name": "slotBottom",
-                  "ioValue": 18
+                  "ioValue": 17.46
                 },
                 {
                   "name": "tipWall",
@@ -376,7 +344,7 @@
                     },
                     {
                       "name": "pivotY",
-                      "ioValue": 22
+                      "ioValue": 21.46
                     },
                     {
                       "name": "bossR",
@@ -507,7 +475,7 @@
                     },
                     {
                       "name": "yDist",
-                      "ioValue": 9.55
+                      "ioValue": 9.01
                     },
                     {
                       "name": "zDist",
@@ -640,7 +608,7 @@
                     },
                     {
                       "name": "yDist",
-                      "ioValue": 22
+                      "ioValue": 21.46
                     },
                     {
                       "name": "zDist",
@@ -756,7 +724,7 @@
                     },
                     {
                       "name": "yDist",
-                      "ioValue": 22
+                      "ioValue": 21.46
                     },
                     {
                       "name": "zDist",
@@ -876,7 +844,7 @@
                     },
                     {
                       "name": "yDist",
-                      "ioValue": 22
+                      "ioValue": 21.46
                     },
                     {
                       "name": "zDist",
@@ -948,7 +916,7 @@
                     },
                     {
                       "name": "height",
-                      "ioValue": 45.3
+                      "ioValue": 45.95
                     }
                   ]
                 },
@@ -988,11 +956,11 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": -2.4
+                      "ioValue": -3.05
                     },
                     {
                       "name": "yDist",
-                      "ioValue": 22
+                      "ioValue": 21.46
                     },
                     {
                       "name": "zDist",
@@ -1057,7 +1025,7 @@
                     },
                     {
                       "name": "height",
-                      "ioValue": 8
+                      "ioValue": 8.65
                     }
                   ]
                 },
@@ -1097,11 +1065,11 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": -5
+                      "ioValue": -5.65
                     },
                     {
                       "name": "yDist",
-                      "ioValue": 22
+                      "ioValue": 21.46
                     },
                     {
                       "name": "zDist",
@@ -1178,11 +1146,11 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": -5
+                      "ioValue": -5.65
                     },
                     {
                       "name": "yDist",
-                      "ioValue": 22
+                      "ioValue": 21.46
                     },
                     {
                       "name": "zDist",
@@ -1390,11 +1358,11 @@
             },
             {
               "name": "xDist",
-              "ioValue": -5
+              "ioValue": -5.65
             },
             {
               "name": "yDist",
-              "ioValue": 22
+              "ioValue": 21.46
             },
             {
               "name": "zDist",
@@ -1414,11 +1382,11 @@
             },
             {
               "name": "xDist",
-              "ioValue": -7
+              "ioValue": -5.65
             },
             {
               "name": "yDist",
-              "ioValue": -24
+              "ioValue": -21.46
             },
             {
               "name": "zDist",
@@ -1559,7 +1527,7 @@
                 },
                 {
                   "name": "xDist",
-                  "ioValue": -19.7
+                  "ioValue": -17.8
                 },
                 {
                   "name": "yDist",
@@ -1768,6 +1736,68 @@
         {
           "name": "zDist",
           "ioValue": -0.5
+        }
+      ]
+    },
+    {
+      "atomType": "Import",
+      "x": 0.1,
+      "y": 0.9,
+      "uniqueID": "id-1627",
+      "fileName": "FE332BD8-D95B-4025-A330-3E4FF8CE8067.JPG",
+      "name": "Import",
+      "type": "JPG",
+      "repoOwner": "BarbourSmith",
+      "repoName": "Pole_Clamp",
+      "gitRef": "HEAD",
+      "SVGwidth": 10,
+      "referenceWidth": 222.3
+    },
+    {
+      "atomType": "Rotate",
+      "x": 0.3,
+      "y": 0.9,
+      "uniqueID": "id-1629",
+      "ioValues": [
+        {
+          "name": "geometry",
+          "ioValue": "__GEOMETRY_INPUT__"
+        },
+        {
+          "name": "x-axis degrees",
+          "ioValue": -1.21
+        },
+        {
+          "name": "y-axis degrees",
+          "ioValue": -4.28
+        },
+        {
+          "name": "z-axis degrees",
+          "ioValue": 0.22
+        }
+      ]
+    },
+    {
+      "atomType": "Move",
+      "x": 0.4,
+      "y": 0.9,
+      "uniqueID": "id-1635",
+      "ioValues": [
+        {
+          "name": "geometry",
+          "ioValue": "__GEOMETRY_INPUT__"
+        },
+        {
+          "name": "xDist",
+          "ioValue": 98.3
+        },
+        {
+          "name": "yDist",
+          "ioValue": -82.6
+        },
+        {
+          "name": "zDist",
+          "ioValue": 73.2
         }
       ]
     },
@@ -5098,6 +5128,16 @@
       "ap2Name": "Shape2",
       "ap1ID": "id-162",
       "ap2ID": "id-168"
+    },
+    {
+      "ap2Name": "geometry",
+      "ap1ID": "id-1627",
+      "ap2ID": "id-1629"
+    },
+    {
+      "ap2Name": "geometry",
+      "ap1ID": "id-1629",
+      "ap2ID": "id-1635"
     },
     {
       "ap2Name": "geometry",
