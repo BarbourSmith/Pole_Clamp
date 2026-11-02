@@ -182,6 +182,40 @@
           "fileTypeVersion": 1
         },
         {
+          "atomType": "Export",
+          "x": 0.6,
+          "y": 0.3,
+          "uniqueID": "id-1404",
+          "ioValues": [
+            {
+              "name": "geometry",
+              "ioValue": "__GEOMETRY_INPUT__"
+            },
+            {
+              "name": "File Type",
+              "ioValue": "STEP",
+              "currentEquation": "STEP"
+            },
+            {
+              "name": "Resolution (dpi)",
+              "ioValue": 96
+            },
+            {
+              "name": "STL Tolerance",
+              "ioValue": 0.05
+            },
+            {
+              "name": "Part Name",
+              "ioValue": "Pole Clamp - AI from Scans",
+              "currentEquation": "Pole Clamp - AI from Scans"
+            }
+          ],
+          "type": null,
+          "resolution": 96,
+          "importIndex": 0,
+          "partName": "Pole Clamp - AI from Scans"
+        },
+        {
           "atomType": "Molecule",
           "x": 0.2,
           "y": 0.4,
@@ -220,10 +254,6 @@
                   "ioValue": 30
                 },
                 {
-                  "name": "arcStart",
-                  "ioValue": -116
-                },
-                {
                   "name": "tongueWidth",
                   "ioValue": 10
                 },
@@ -240,10 +270,6 @@
                   "ioValue": 6
                 },
                 {
-                  "name": "forkTop",
-                  "ioValue": 32
-                },
-                {
                   "name": "slotWidth",
                   "ioValue": 9
                 },
@@ -256,14 +282,6 @@
                   "ioValue": 4
                 },
                 {
-                  "name": "flareStart",
-                  "ioValue": 12
-                },
-                {
-                  "name": "flare",
-                  "ioValue": 8
-                },
-                {
                   "name": "lipDepth",
                   "ioValue": 1
                 },
@@ -274,11 +292,27 @@
                 {
                   "name": "hingeClearance",
                   "ioValue": 0.3
+                },
+                {
+                  "name": "tangentAngle",
+                  "ioValue": -65
+                },
+                {
+                  "name": "arcEnd",
+                  "ioValue": 30
+                },
+                {
+                  "name": "kink",
+                  "ioValue": 44
+                },
+                {
+                  "name": "forkLength",
+                  "ioValue": 24
                 }
               ],
               "interpreterVersion": 1,
-              "code": "/**\n * Hook Jaw, closed on a 29 mm pipe whose center is the origin; Z runs along the pipe.\n * A full-width round hook concentric with the pipe from beside the lower hinge, around\n * the bottom, to the right side; then a fork up the right side that flares outward and\n * tapers toward its tip. A center tongue joins the hook to the hinge pin, and the hook's\n * outer layers are notched to clear the body's hinge plates. The fork's two prongs are\n * split by a slot for the rod, with small lips at the tip that narrow the slot.\n */\nfunction run(\n  pipeR: number = 14.5,      // inner radius: closes on a 29 mm pipe\n  wall: number = 6,\n  width: number = 30,        // along the pipe\n  arcStart: number = -118,   // degrees, where the round hook begins beside the hinge\n  tongueWidth: number = 10,\n  pinX: number = -7, pinY: number = -24, knuckleR: number = 6,\n  hingeClearance: number = 0.3, // gap around the body's hinge plates\n  forkTop: number = 32,      // tip of the fork above the pipe center\n  tipWall: number = 4,       // fork wall thickness at the tip\n  flareStart: number = 12,   // height where the fork starts to flare outward\n  flare: number = 8,         // outward flare angle, degrees\n  slotWidth: number = 9,\n  slotBottom: number = 18,   // rod (8 mm) rests on this, centered 22 mm above the pipe\n  lipDepth: number = 1,      // how far each tip lip narrows the slot\n  lipLength: number = 3,\n): Assembly {\n  const outerR = pipeR + wall;\n  const rad = (d: number) => (d * Math.PI) / 180;\n  const polar = (r: number, d: number) => [r * Math.cos(rad(d)), r * Math.sin(rad(d))];\n  // Annular sector between two angles (degrees), as a drawing.\n  const sector = (a0: number, a1: number) => {\n    const pts: number[][] = [[0, 0]];\n    for (let i = 0; i <= 16; i++) pts.push(polar(60, a0 + ((a1 - a0) * i) / 16));\n    let wedge = replicad.draw(pts[0]);\n    for (const p of pts.slice(1)) wedge = wedge.lineTo(p);\n    return replicad.drawCircle(outerR).cut(replicad.drawCircle(pipeR)).intersect(wedge.close());\n  };\n\n  // Fork: centerline flares outward above flareStart; wall tapers from wall to tipWall.\n  const center = (y: number) => pipeR + wall / 2 + Math.max(0, y - flareStart) * Math.tan(rad(flare));\n  const half = (y: number) => (wall + (tipWall - wall) * (y / forkTop)) / 2;\n  const ys = [0, flareStart];\n  for (let i = 1; i <= 6; i++) ys.push(flareStart + ((forkTop - flareStart) * i) / 6);\n  let fork = replicad.draw([center(0) - half(0), 0]);\n  for (const y of ys.slice(1)) fork = fork.lineTo([center(y) - half(y), y]);\n  for (const y of [...ys].reverse()) fork = fork.lineTo([center(y) + half(y), y]);\n\n  // Notch the full-width hook around the hinge so the body's plates (above and below the\n  // tongue) clear it.\n  const plateClear = replicad.drawCircle(knuckleR + hingeClearance).translate(pinX, pinY)\n    .sketchOnPlane().extrude(width);\n  const hook = sector(arcStart, 0).fuse(fork.close()).sketchOnPlane().extrude(width).cut(plateClear);\n\n  // Center tongue: knuckle around the pin, webbed to the start of the hook.\n  const knuckle = replicad.drawCircle(knuckleR).translate(pinX, pinY);\n  const web = replicad.draw([pinX - knuckleR * 0.7, pinY + knuckleR * 0.7])\n    .lineTo(polar(pipeR, arcStart))\n    .lineTo(polar(pipeR, arcStart + 12))\n    .lineTo(polar(outerR, arcStart + 12))\n    .lineTo([pinX + knuckleR * 0.9, pinY - knuckleR * 0.4])\n    .close()\n    .cut(replicad.drawCircle(pipeR));\n  const tongue = knuckle.fuse(web).sketchOnPlane().extrude(tongueWidth)\n    .translate(0, 0, (width - tongueWidth) / 2);\n\n  // Open-ended slot between the prongs (makeBaseBox is centered in X and Y), full width\n  // below the lips and narrowed by the lips over the last lipLength of the fork.\n  const slotX = center(forkTop);\n  const slotSpan = 30; // wide enough to clear the flared fork in X\n  const lower = forkTop - lipLength - slotBottom;\n  const slot = replicad.makeBaseBox(slotSpan, lower, slotWidth)\n    .translate(slotX, slotBottom + lower / 2, (width - slotWidth) / 2);\n  const lipGap = slotWidth - 2 * lipDepth;\n  const mouth = replicad.makeBaseBox(slotSpan, lipLength + 2, lipGap)\n    .translate(slotX, forkTop - lipLength + (lipLength + 2) / 2, (width - lipGap) / 2);\n  const jaw = hook.fuse(tongue).cut(slot).cut(mouth);\n  return new Assembly({ geometry: jaw });\n}\n",
-              "compiledCode": "\"use strict\";\n/**\n * Hook Jaw, closed on a 29 mm pipe whose center is the origin; Z runs along the pipe.\n * A full-width round hook concentric with the pipe from beside the lower hinge, around\n * the bottom, to the right side; then a fork up the right side that flares outward and\n * tapers toward its tip. A center tongue joins the hook to the hinge pin, and the hook's\n * outer layers are notched to clear the body's hinge plates. The fork's two prongs are\n * split by a slot for the rod, with small lips at the tip that narrow the slot.\n */\nfunction run(pipeR = 14.5, // inner radius: closes on a 29 mm pipe\nwall = 6, width = 30, // along the pipe\narcStart = -118, // degrees, where the round hook begins beside the hinge\ntongueWidth = 10, pinX = -7, pinY = -24, knuckleR = 6, hingeClearance = 0.3, // gap around the body's hinge plates\nforkTop = 32, // tip of the fork above the pipe center\ntipWall = 4, // fork wall thickness at the tip\nflareStart = 12, // height where the fork starts to flare outward\nflare = 8, // outward flare angle, degrees\nslotWidth = 9, slotBottom = 18, // rod (8 mm) rests on this, centered 22 mm above the pipe\nlipDepth = 1, // how far each tip lip narrows the slot\nlipLength = 3) {\n    const outerR = pipeR + wall;\n    const rad = (d) => (d * Math.PI) / 180;\n    const polar = (r, d) => [r * Math.cos(rad(d)), r * Math.sin(rad(d))];\n    // Annular sector between two angles (degrees), as a drawing.\n    const sector = (a0, a1) => {\n        const pts = [[0, 0]];\n        for (let i = 0; i <= 16; i++)\n            pts.push(polar(60, a0 + ((a1 - a0) * i) / 16));\n        let wedge = replicad.draw(pts[0]);\n        for (const p of pts.slice(1))\n            wedge = wedge.lineTo(p);\n        return replicad.drawCircle(outerR).cut(replicad.drawCircle(pipeR)).intersect(wedge.close());\n    };\n    // Fork: centerline flares outward above flareStart; wall tapers from wall to tipWall.\n    const center = (y) => pipeR + wall / 2 + Math.max(0, y - flareStart) * Math.tan(rad(flare));\n    const half = (y) => (wall + (tipWall - wall) * (y / forkTop)) / 2;\n    const ys = [0, flareStart];\n    for (let i = 1; i <= 6; i++)\n        ys.push(flareStart + ((forkTop - flareStart) * i) / 6);\n    let fork = replicad.draw([center(0) - half(0), 0]);\n    for (const y of ys.slice(1))\n        fork = fork.lineTo([center(y) - half(y), y]);\n    for (const y of [...ys].reverse())\n        fork = fork.lineTo([center(y) + half(y), y]);\n    // Notch the full-width hook around the hinge so the body's plates (above and below the\n    // tongue) clear it.\n    const plateClear = replicad.drawCircle(knuckleR + hingeClearance).translate(pinX, pinY)\n        .sketchOnPlane().extrude(width);\n    const hook = sector(arcStart, 0).fuse(fork.close()).sketchOnPlane().extrude(width).cut(plateClear);\n    // Center tongue: knuckle around the pin, webbed to the start of the hook.\n    const knuckle = replicad.drawCircle(knuckleR).translate(pinX, pinY);\n    const web = replicad.draw([pinX - knuckleR * 0.7, pinY + knuckleR * 0.7])\n        .lineTo(polar(pipeR, arcStart))\n        .lineTo(polar(pipeR, arcStart + 12))\n        .lineTo(polar(outerR, arcStart + 12))\n        .lineTo([pinX + knuckleR * 0.9, pinY - knuckleR * 0.4])\n        .close()\n        .cut(replicad.drawCircle(pipeR));\n    const tongue = knuckle.fuse(web).sketchOnPlane().extrude(tongueWidth)\n        .translate(0, 0, (width - tongueWidth) / 2);\n    // Open-ended slot between the prongs (makeBaseBox is centered in X and Y), full width\n    // below the lips and narrowed by the lips over the last lipLength of the fork.\n    const slotX = center(forkTop);\n    const slotSpan = 30; // wide enough to clear the flared fork in X\n    const lower = forkTop - lipLength - slotBottom;\n    const slot = replicad.makeBaseBox(slotSpan, lower, slotWidth)\n        .translate(slotX, slotBottom + lower / 2, (width - slotWidth) / 2);\n    const lipGap = slotWidth - 2 * lipDepth;\n    const mouth = replicad.makeBaseBox(slotSpan, lipLength + 2, lipGap)\n        .translate(slotX, forkTop - lipLength + (lipLength + 2) / 2, (width - lipGap) / 2);\n    const jaw = hook.fuse(tongue).cut(slot).cut(mouth);\n    return new Assembly({ geometry: jaw });\n}\n"
+              "code": "/**\n * Hook Jaw, closed on a 29 mm pipe whose center is the origin; Z runs along the pipe.\n * Shape read from the photos: from the lower hinge a straight leg runs tangent into a\n * round section concentric with the pipe; where the round section ends the jaw kinks\n * outward into a straight fork that tapers to its tip. A center tongue carries the hinge\n * knuckle along the leg, and the full-width layers are notched to clear the body's hinge\n * plates. The fork's two prongs are split by a slot for the rod, with small lips at the tip.\n */\nfunction run(\n  pipeR: number = 14.5,      // bore radius: closes on a 29 mm pipe\n  wall: number = 6,          // leg and round-section wall\n  width: number = 30,        // along the pipe\n  tangentAngle: number = -65, // degrees, where the straight leg meets the bore\n  arcEnd: number = 30,       // degrees, where the round section ends and the fork kinks\n  kink: number = 44,         // outward kink of the fork from the arc's tangent, degrees\n  forkLength: number = 24,   // along the fork, from the kink to the tip\n  tipWall: number = 4,       // fork wall at the tip\n  tongueWidth: number = 10,\n  pinX: number = -7, pinY: number = -24, knuckleR: number = 6,\n  hingeClearance: number = 0.3, // gap around the body's hinge plates\n  slotWidth: number = 9,\n  slotBottom: number = 18,   // rod (8 mm) rests on this, centered 22 mm above the pipe\n  lipDepth: number = 1,      // how far each tip lip narrows the slot\n  lipLength: number = 3,\n): Assembly {\n  const outerR = pipeR + wall;\n  const rad = (d: number) => (d * Math.PI) / 180;\n  const polar = (r: number, d: number) => [r * Math.cos(rad(d)), r * Math.sin(rad(d))];\n  const add = (p: number[], v: number[], s: number) => [p[0] + v[0] * s, p[1] + v[1] * s];\n\n  // Round section: annular sector from the tangent point to the kink.\n  const pts: number[][] = [[0, 0]];\n  for (let i = 0; i <= 16; i++) pts.push(polar(60, tangentAngle + ((arcEnd - tangentAngle) * i) / 16));\n  let wedge = replicad.draw(pts[0]);\n  for (const p of pts.slice(1)) wedge = wedge.lineTo(p);\n  const arc = replicad.drawCircle(outerR).cut(replicad.drawCircle(pipeR)).intersect(wedge.close());\n\n  // Straight leg: tangent to the bore at tangentAngle, running back past the hinge pin.\n  const n = polar(1, tangentAngle);                 // outward normal at the tangent point\n  const t = [-n[1], n[0]];                          // along the bore, toward the arc\n  const T = polar(pipeR, tangentAngle);\n  const back = t[0] * (pinX - T[0]) + t[1] * (pinY - T[1]); // pin's position along the leg\n  const legStart = add(T, t, back);\n  const leg = replicad.draw(legStart).lineTo(T).lineTo(add(T, n, wall))\n    .lineTo(add(legStart, n, wall)).close();\n\n  // Fork: kinks outward from the arc's tangent and tapers from wall to tipWall.\n  const heading = arcEnd + 90 - kink;\n  const d = polar(1, heading);\n  const nf = [d[1], -d[0]];                         // across the fork, away from the pipe\n  const base = polar(pipeR, arcEnd);\n  const tip = add(base, d, forkLength);\n  const fork = replicad.draw(base).lineTo(tip).lineTo(add(tip, nf, tipWall))\n    .lineTo(add(base, nf, wall)).close();\n\n  // Full-width jaw, notched around the hinge so the body's plates clear it.\n  const plateClear = replicad.drawCircle(knuckleR + hingeClearance).translate(pinX, pinY)\n    .sketchOnPlane().extrude(width);\n  const full = arc.fuse(leg).fuse(fork).cut(replicad.drawCircle(pipeR))\n    .sketchOnPlane().extrude(width).cut(plateClear);\n\n  // Center tongue: the hinge knuckle plus the leg, so the knuckle stays joined to the jaw\n  // where the notch removes the outer layers.\n  const knuckle = replicad.drawCircle(knuckleR).translate(pinX, pinY);\n  const tongue = knuckle.fuse(leg).cut(replicad.drawCircle(pipeR))\n    .sketchOnPlane().extrude(tongueWidth).translate(0, 0, (width - tongueWidth) / 2);\n\n  // Slot between the prongs from slotBottom to the tip, narrowed by lips over the last\n  // lipLength (makeBaseBox is centered in X and Y).\n  const tipY = Math.max(tip[1], tip[1] + nf[1] * tipWall);\n  const slotX = tip[0];\n  const span = 30;\n  const lower = tipY - lipLength - slotBottom;\n  const slot = replicad.makeBaseBox(span, lower, slotWidth)\n    .translate(slotX, slotBottom + lower / 2, (width - slotWidth) / 2);\n  const lipGap = slotWidth - 2 * lipDepth;\n  const mouth = replicad.makeBaseBox(span, lipLength + 2, lipGap)\n    .translate(slotX, tipY - lipLength + (lipLength + 2) / 2, (width - lipGap) / 2);\n  return new Assembly({ geometry: full.fuse(tongue).cut(slot).cut(mouth) });\n}\n",
+              "compiledCode": "\"use strict\";\n/**\n * Hook Jaw, closed on a 29 mm pipe whose center is the origin; Z runs along the pipe.\n * Shape read from the photos: from the lower hinge a straight leg runs tangent into a\n * round section concentric with the pipe; where the round section ends the jaw kinks\n * outward into a straight fork that tapers to its tip. A center tongue carries the hinge\n * knuckle along the leg, and the full-width layers are notched to clear the body's hinge\n * plates. The fork's two prongs are split by a slot for the rod, with small lips at the tip.\n */\nfunction run(pipeR = 14.5, // bore radius: closes on a 29 mm pipe\nwall = 6, // leg and round-section wall\nwidth = 30, // along the pipe\ntangentAngle = -65, // degrees, where the straight leg meets the bore\narcEnd = 30, // degrees, where the round section ends and the fork kinks\nkink = 44, // outward kink of the fork from the arc's tangent, degrees\nforkLength = 24, // along the fork, from the kink to the tip\ntipWall = 4, // fork wall at the tip\ntongueWidth = 10, pinX = -7, pinY = -24, knuckleR = 6, hingeClearance = 0.3, // gap around the body's hinge plates\nslotWidth = 9, slotBottom = 18, // rod (8 mm) rests on this, centered 22 mm above the pipe\nlipDepth = 1, // how far each tip lip narrows the slot\nlipLength = 3) {\n    const outerR = pipeR + wall;\n    const rad = (d) => (d * Math.PI) / 180;\n    const polar = (r, d) => [r * Math.cos(rad(d)), r * Math.sin(rad(d))];\n    const add = (p, v, s) => [p[0] + v[0] * s, p[1] + v[1] * s];\n    // Round section: annular sector from the tangent point to the kink.\n    const pts = [[0, 0]];\n    for (let i = 0; i <= 16; i++)\n        pts.push(polar(60, tangentAngle + ((arcEnd - tangentAngle) * i) / 16));\n    let wedge = replicad.draw(pts[0]);\n    for (const p of pts.slice(1))\n        wedge = wedge.lineTo(p);\n    const arc = replicad.drawCircle(outerR).cut(replicad.drawCircle(pipeR)).intersect(wedge.close());\n    // Straight leg: tangent to the bore at tangentAngle, running back past the hinge pin.\n    const n = polar(1, tangentAngle); // outward normal at the tangent point\n    const t = [-n[1], n[0]]; // along the bore, toward the arc\n    const T = polar(pipeR, tangentAngle);\n    const back = t[0] * (pinX - T[0]) + t[1] * (pinY - T[1]); // pin's position along the leg\n    const legStart = add(T, t, back);\n    const leg = replicad.draw(legStart).lineTo(T).lineTo(add(T, n, wall))\n        .lineTo(add(legStart, n, wall)).close();\n    // Fork: kinks outward from the arc's tangent and tapers from wall to tipWall.\n    const heading = arcEnd + 90 - kink;\n    const d = polar(1, heading);\n    const nf = [d[1], -d[0]]; // across the fork, away from the pipe\n    const base = polar(pipeR, arcEnd);\n    const tip = add(base, d, forkLength);\n    const fork = replicad.draw(base).lineTo(tip).lineTo(add(tip, nf, tipWall))\n        .lineTo(add(base, nf, wall)).close();\n    // Full-width jaw, notched around the hinge so the body's plates clear it.\n    const plateClear = replicad.drawCircle(knuckleR + hingeClearance).translate(pinX, pinY)\n        .sketchOnPlane().extrude(width);\n    const full = arc.fuse(leg).fuse(fork).cut(replicad.drawCircle(pipeR))\n        .sketchOnPlane().extrude(width).cut(plateClear);\n    // Center tongue: the hinge knuckle plus the leg, so the knuckle stays joined to the jaw\n    // where the notch removes the outer layers.\n    const knuckle = replicad.drawCircle(knuckleR).translate(pinX, pinY);\n    const tongue = knuckle.fuse(leg).cut(replicad.drawCircle(pipeR))\n        .sketchOnPlane().extrude(tongueWidth).translate(0, 0, (width - tongueWidth) / 2);\n    // Slot between the prongs from slotBottom to the tip, narrowed by lips over the last\n    // lipLength (makeBaseBox is centered in X and Y).\n    const tipY = Math.max(tip[1], tip[1] + nf[1] * tipWall);\n    const slotX = tip[0];\n    const span = 30;\n    const lower = tipY - lipLength - slotBottom;\n    const slot = replicad.makeBaseBox(span, lower, slotWidth)\n        .translate(slotX, slotBottom + lower / 2, (width - slotWidth) / 2);\n    const lipGap = slotWidth - 2 * lipDepth;\n    const mouth = replicad.makeBaseBox(span, lipLength + 2, lipGap)\n        .translate(slotX, tipY - lipLength + (lipLength + 2) / 2, (width - lipGap) / 2);\n    return new Assembly({ geometry: full.fuse(tongue).cut(slot).cut(mouth) });\n}\n"
             }
           ],
           "allConnectors": [
@@ -338,7 +372,7 @@
                   "ioValues": [
                     {
                       "name": "pivotX",
-                      "ioValue": 39.2
+                      "ioValue": 39.4
                     },
                     {
                       "name": "pivotY",
@@ -481,7 +515,7 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": 38.11
+                      "ioValue": 38.31
                     },
                     {
                       "name": "yDist",
@@ -614,7 +648,7 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": 39.2
+                      "ioValue": 39.4
                     },
                     {
                       "name": "yDist",
@@ -730,7 +764,7 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": 22.2
+                      "ioValue": 22.4
                     },
                     {
                       "name": "yDist",
@@ -791,7 +825,7 @@
                     },
                     {
                       "name": "length",
-                      "ioValue": 12.5
+                      "ioValue": 11.8
                     },
                     {
                       "name": "turns",
@@ -926,7 +960,7 @@
                     },
                     {
                       "name": "height",
-                      "ioValue": 45.6
+                      "ioValue": 45.8
                     }
                   ]
                 },
@@ -1302,96 +1336,6 @@
           "topLevel": false,
           "allAtoms": [
             {
-              "atomType": "RegularPolygon",
-              "x": 0.2,
-              "y": 0.8,
-              "uniqueID": "id-1178",
-              "ioValues": [
-                {
-                  "name": "number of sides",
-                  "ioValue": 6,
-                  "currentEquation": "6"
-                },
-                {
-                  "name": "diameter",
-                  "ioValue": 2.9
-                }
-              ]
-            },
-            {
-              "atomType": "Extrude",
-              "x": 0.4,
-              "y": 0.8,
-              "uniqueID": "id-1182",
-              "ioValues": [
-                {
-                  "name": "geometry",
-                  "ioValue": "__GEOMETRY_INPUT__"
-                },
-                {
-                  "name": "height",
-                  "ioValue": 3
-                }
-              ]
-            },
-            {
-              "atomType": "Move",
-              "x": 0.5,
-              "y": 0.9,
-              "uniqueID": "id-1186",
-              "ioValues": [
-                {
-                  "name": "geometry",
-                  "ioValue": "__GEOMETRY_INPUT__"
-                },
-                {
-                  "name": "xDist",
-                  "ioValue": 0
-                },
-                {
-                  "name": "yDist",
-                  "ioValue": 0
-                },
-                {
-                  "name": "zDist",
-                  "ioValue": 27
-                }
-              ]
-            },
-            {
-              "atomType": "Fusion",
-              "x": 0.7,
-              "y": 0.8,
-              "uniqueID": "id-1192",
-              "ioValues": [
-                {
-                  "name": "Shape 1",
-                  "ioValue": "__GEOMETRY_INPUT__"
-                },
-                {
-                  "name": "Shape2",
-                  "ioValue": "__GEOMETRY_INPUT__"
-                }
-              ],
-              "unionType": "Fusion"
-            },
-            {
-              "atomType": "Difference",
-              "x": 0.8,
-              "y": 0.5,
-              "uniqueID": "id-1197",
-              "ioValues": [
-                {
-                  "name": "retain",
-                  "ioValue": "__GEOMETRY_INPUT__"
-                },
-                {
-                  "name": "remove",
-                  "ioValue": "__GEOMETRY_INPUT__"
-                }
-              ]
-            },
-            {
               "atomType": "Output",
               "x": 1,
               "y": 0.5,
@@ -1435,43 +1379,13 @@
           "allConnectors": [
             {
               "ap2Name": "geometry",
-              "ap1ID": "id-1178",
-              "ap2ID": "id-1182"
-            },
-            {
-              "ap2Name": "geometry",
-              "ap1ID": "id-1182",
-              "ap2ID": "id-1186"
-            },
-            {
-              "ap2Name": "Shape 1",
-              "ap1ID": "id-1182",
-              "ap2ID": "id-1192"
-            },
-            {
-              "ap2Name": "Shape2",
-              "ap1ID": "id-1186",
-              "ap2ID": "id-1192"
-            },
-            {
-              "ap2Name": "remove",
-              "ap1ID": "id-1192",
-              "ap2ID": "id-1197"
-            },
-            {
-              "ap2Name": "number or geometry",
-              "ap1ID": "id-1197",
-              "ap2ID": "id-355"
-            },
-            {
-              "ap2Name": "geometry",
               "ap1ID": "id-357",
               "ap2ID": "id-360"
             },
             {
-              "ap2Name": "retain",
+              "ap2Name": "number or geometry",
               "ap1ID": "id-360",
-              "ap2ID": "id-1197"
+              "ap2ID": "id-355"
             }
           ],
           "fileTypeVersion": 1
@@ -1780,6 +1694,11 @@
         }
       ],
       "allConnectors": [
+        {
+          "ap2Name": "geometry",
+          "ap1ID": "id-126",
+          "ap2ID": "id-1404"
+        },
         {
           "ap2Name": "Shape 1",
           "ap1ID": "id-126",
@@ -2154,7 +2073,7 @@
         {
           "atomType": "Rotate",
           "x": 0.4,
-          "y": 0.7,
+          "y": 0.6,
           "uniqueID": "id-1276",
           "ioValues": [
             {
@@ -2179,7 +2098,7 @@
         {
           "atomType": "Move",
           "x": 0.5,
-          "y": 0.7,
+          "y": 0.6,
           "uniqueID": "id-1282",
           "ioValues": [
             {
@@ -2217,6 +2136,101 @@
           "selectedTags": [],
           "includeUntagged": false,
           "notKeepOut": true
+        },
+        {
+          "atomType": "Export",
+          "x": 0.5,
+          "y": 0.2,
+          "uniqueID": "id-1410",
+          "ioValues": [
+            {
+              "name": "geometry",
+              "ioValue": "__GEOMETRY_INPUT__"
+            },
+            {
+              "name": "File Type",
+              "ioValue": "STEP",
+              "currentEquation": "STEP"
+            },
+            {
+              "name": "Resolution (dpi)",
+              "ioValue": 96
+            },
+            {
+              "name": "STL Tolerance",
+              "ioValue": 0.05
+            },
+            {
+              "name": "Part Name",
+              "ioValue": "Pole Clamp - Mine",
+              "currentEquation": "Pole Clamp - Mine"
+            }
+          ],
+          "type": null,
+          "resolution": 96,
+          "importIndex": 0,
+          "partName": "Pole Clamp - Mine"
+        },
+        {
+          "atomType": "Molecule",
+          "x": 0.4,
+          "y": 0.9,
+          "uniqueID": "id-1420",
+          "name": "Clamping Arm",
+          "topLevel": false,
+          "allAtoms": [
+            {
+              "atomType": "Output",
+              "x": 1,
+              "y": 0.5,
+              "uniqueID": "id-1422",
+              "ioValues": [
+                {
+                  "name": "number or geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ]
+            },
+            {
+              "atomType": "Molecule",
+              "x": 0.2,
+              "y": 0.4,
+              "uniqueID": "id-1424",
+              "name": "Post",
+              "topLevel": false,
+              "allAtoms": [
+                {
+                  "atomType": "Output",
+                  "x": 1,
+                  "y": 0.5,
+                  "uniqueID": "id-1426",
+                  "ioValues": [
+                    {
+                      "name": "number or geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Circle",
+                  "x": 0.2,
+                  "y": 0.5,
+                  "uniqueID": "id-1428",
+                  "ioValues": [
+                    {
+                      "name": "diameter",
+                      "ioValue": 7,
+                      "currentEquation": "7"
+                    }
+                  ]
+                }
+              ],
+              "allConnectors": [],
+              "fileTypeVersion": 1
+            }
+          ],
+          "allConnectors": [],
+          "fileTypeVersion": 1
         },
         {
           "atomType": "Output",
@@ -4050,6 +4064,11 @@
           "ap2Name": "number or geometry",
           "ap1ID": "id-1401",
           "ap2ID": "id-432"
+        },
+        {
+          "ap2Name": "geometry",
+          "ap1ID": "id-434",
+          "ap2ID": "id-1410"
         },
         {
           "ap2Name": "Shape 1",
