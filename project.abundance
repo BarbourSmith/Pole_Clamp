@@ -77,27 +77,9 @@
       "repoOwner": "BarbourSmith",
       "repoName": "Pole_Clamp",
       "SVGwidth": 10
-    },
-    {
-      "atomType": "Circle",
-      "x": 0.8,
-      "y": 0.6,
-      "uniqueID": "id-4",
-      "ioValues": [
-        {
-          "name": "diameter",
-          "ioValue": 10
-        }
-      ]
     }
   ],
-  "allConnectors": [
-    {
-      "ap2Name": "number or geometry",
-      "ap1ID": "id-4",
-      "ap2ID": "id-2"
-    }
-  ],
+  "allConnectors": [],
   "unitsKey": "MM",
   "fileTypeVersion": 1,
   "filetypeVersion": 1
