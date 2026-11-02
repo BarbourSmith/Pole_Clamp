@@ -7,8 +7,56 @@
   "topLevel": true,
   "allAtoms": [
     {
+      "atomType": "Import",
+      "x": 0.1,
+      "y": 0.3,
+      "uniqueID": "id-10",
+      "fileName": "AbundanceScan-2026-11-02_085407.glb",
+      "name": "Import",
+      "type": "GLB",
+      "repoOwner": "BarbourSmith",
+      "repoName": "Pole_Clamp",
+      "SVGwidth": 10
+    },
+    {
+      "atomType": "Import",
+      "x": 0.1,
+      "y": 0.4,
+      "uniqueID": "id-15",
+      "fileName": "8D2EC6EF-5E47-4D5E-AC5F-77EE3FD6594C.JPG",
+      "name": "Import",
+      "type": "JPG",
+      "repoOwner": "BarbourSmith",
+      "repoName": "Pole_Clamp",
+      "SVGwidth": 10
+    },
+    {
+      "atomType": "Import",
+      "x": 0,
+      "y": 0.6,
+      "uniqueID": "id-17",
+      "fileName": "76B7D7C2-4732-4007-8ABC-24344A4A9E45.JPG",
+      "name": "Import",
+      "type": "JPG",
+      "repoOwner": "BarbourSmith",
+      "repoName": "Pole_Clamp",
+      "SVGwidth": 10
+    },
+    {
+      "atomType": "Import",
+      "x": 0,
+      "y": 0.9,
+      "uniqueID": "id-19",
+      "fileName": "336793AA-A226-4D87-A1D2-3B319A822913.JPG",
+      "name": "Import",
+      "type": "JPG",
+      "repoOwner": "BarbourSmith",
+      "repoName": "Pole_Clamp",
+      "SVGwidth": 10
+    },
+    {
       "atomType": "Output",
-      "x": 0.98,
+      "x": 1,
       "y": 0.5,
       "uniqueID": "id-2",
       "ioValues": [
@@ -19,9 +67,21 @@
       ]
     },
     {
+      "atomType": "Import",
+      "x": 0.1,
+      "y": 0.9,
+      "uniqueID": "id-21",
+      "fileName": "FE332BD8-D95B-4025-A330-3E4FF8CE8067.JPG",
+      "name": "Import",
+      "type": "JPG",
+      "repoOwner": "BarbourSmith",
+      "repoName": "Pole_Clamp",
+      "SVGwidth": 10
+    },
+    {
       "atomType": "Circle",
-      "x": 0.7976,
-      "y": 0.5775,
+      "x": 0.8,
+      "y": 0.6,
       "uniqueID": "id-4",
       "ioValues": [
         {
