@@ -3221,7 +3221,7 @@
             {
               "atomType": "Input",
               "x": 0.0254,
-              "y": 0.1538,
+              "y": 0.1634,
               "uniqueID": "id-2386",
               "name": "input",
               "type": "geometry",
@@ -3230,7 +3230,7 @@
             {
               "atomType": "Input",
               "x": 0.0254,
-              "y": 0.2462,
+              "y": 0.907,
               "uniqueID": "id-2389",
               "name": "input_1",
               "type": "geometry",
@@ -3238,8 +3238,8 @@
             },
             {
               "atomType": "Assembly",
-              "x": 0.3135,
-              "y": 0.7549,
+              "x": 0.3452,
+              "y": 0.7127,
               "uniqueID": "id-2392",
               "ioValues": [
                 {
@@ -3960,6 +3960,35 @@
                 }
               ],
               "fileTypeVersion": 1
+            },
+            {
+              "atomType": "Circle",
+              "x": 0.0655,
+              "y": 0.5437,
+              "uniqueID": "id-2640",
+              "ioValues": [
+                {
+                  "name": "diameter",
+                  "ioValue": 14
+                }
+              ]
+            },
+            {
+              "atomType": "Extrude",
+              "x": 0.1898,
+              "y": 0.6282,
+              "uniqueID": "id-2643",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "height",
+                  "ioValue": 30,
+                  "currentEquation": "30"
+                }
+              ]
             }
           ],
           "allConnectors": [
@@ -4032,6 +4061,11 @@
               "ap2Name": "geometry",
               "ap1ID": "id-2582",
               "ap2ID": "id-2576"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-2640",
+              "ap2ID": "id-2643"
             }
           ],
           "fileTypeVersion": 1
