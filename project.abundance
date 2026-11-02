@@ -111,11 +111,15 @@
                 {
                   "name": "lowerKnuckleR",
                   "ioValue": 6
+                },
+                {
+                  "name": "seatR",
+                  "ioValue": 14.5
                 }
               ],
               "interpreterVersion": 1,
-              "code": "/**\n * Clamp Body outline (top view), in mm. Pipe center at the origin; the V faces\n * are tangent to a 29 mm pipe. Measured from the top-down photo on the 1/2\" mat.\n */\nfunction run(\n  boxBack: number = -31.5,   // outer face of the bolt box\n  boxHalfHeight: number = 14,\n  pocketBack: number = -25,  // inner face of the bolt box (6.5 mm wall)\n  pocketHalfHeight: number = 7.25,\n  pocketFront: number = -14.5, // where the V faces start\n  vAngle: number = 36.6,     // V face angle from the X axis, degrees\n  upperPinX: number = -5, upperPinY: number = 22, upperKnuckleR: number = 5.5,\n  lowerPinX: number = -7, lowerPinY: number = -24, lowerKnuckleR: number = 6,\n): Assembly {\n  const t = Math.tan((vAngle * Math.PI) / 180);\n  const vy = (x: number) => pocketHalfHeight + t * (x - pocketFront);\n  // Arm corners sit well inside the knuckle circles so the outline crosses them cleanly.\n  const outline = replicad\n    .draw([boxBack, -boxHalfHeight])\n    .lineTo([-17, -boxHalfHeight])\n    .lineTo([lowerPinX - 3, lowerPinY - 4.8])\n    .lineTo([lowerPinX + 5.8, lowerPinY - 1])\n    .lineTo([-0.7, -vy(-0.7)])\n    .lineTo([pocketFront, -pocketHalfHeight])\n    .lineTo([pocketBack, -pocketHalfHeight])\n    .lineTo([pocketBack, pocketHalfHeight])\n    .lineTo([pocketFront, pocketHalfHeight])\n    .lineTo([-1, vy(-1)])\n    .lineTo([upperPinX + 4.5, upperPinY + 1])\n    .lineTo([upperPinX - 4, upperPinY + 3.5])\n    .lineTo([-18, boxHalfHeight])\n    .lineTo([boxBack, boxHalfHeight])\n    .close();\n  const knuckles = replicad\n    .drawCircle(upperKnuckleR).translate(upperPinX, upperPinY)\n    .fuse(replicad.drawCircle(lowerKnuckleR).translate(lowerPinX, lowerPinY));\n  return new Assembly({ geometry: outline.fuse(knuckles) });\n}\n",
-              "compiledCode": "\"use strict\";\n/**\n * Clamp Body outline (top view), in mm. Pipe center at the origin; the V faces\n * are tangent to a 29 mm pipe. Measured from the top-down photo on the 1/2\" mat.\n */\nfunction run(boxBack = -31.5, // outer face of the bolt box\nboxHalfHeight = 14, pocketBack = -25, // inner face of the bolt box (6.5 mm wall)\npocketHalfHeight = 7.25, pocketFront = -14.5, // where the V faces start\nvAngle = 36.6, // V face angle from the X axis, degrees\nupperPinX = -5, upperPinY = 22, upperKnuckleR = 5.5, lowerPinX = -7, lowerPinY = -24, lowerKnuckleR = 6) {\n    const t = Math.tan((vAngle * Math.PI) / 180);\n    const vy = (x) => pocketHalfHeight + t * (x - pocketFront);\n    // Arm corners sit well inside the knuckle circles so the outline crosses them cleanly.\n    const outline = replicad\n        .draw([boxBack, -boxHalfHeight])\n        .lineTo([-17, -boxHalfHeight])\n        .lineTo([lowerPinX - 3, lowerPinY - 4.8])\n        .lineTo([lowerPinX + 5.8, lowerPinY - 1])\n        .lineTo([-0.7, -vy(-0.7)])\n        .lineTo([pocketFront, -pocketHalfHeight])\n        .lineTo([pocketBack, -pocketHalfHeight])\n        .lineTo([pocketBack, pocketHalfHeight])\n        .lineTo([pocketFront, pocketHalfHeight])\n        .lineTo([-1, vy(-1)])\n        .lineTo([upperPinX + 4.5, upperPinY + 1])\n        .lineTo([upperPinX - 4, upperPinY + 3.5])\n        .lineTo([-18, boxHalfHeight])\n        .lineTo([boxBack, boxHalfHeight])\n        .close();\n    const knuckles = replicad\n        .drawCircle(upperKnuckleR).translate(upperPinX, upperPinY)\n        .fuse(replicad.drawCircle(lowerKnuckleR).translate(lowerPinX, lowerPinY));\n    return new Assembly({ geometry: outline.fuse(knuckles) });\n}\n"
+              "code": "/**\n * Clamp Body outline (top view), in mm. Pipe center at the origin; the body's side of the\n * opening is a round seat matching the jaw, so a 29 mm pipe is held all the way round.\n * Box, arms and hinge positions measured from the top-down photo on the 1/2\" mat.\n */\nfunction run(\n  boxBack: number = -31.5,   // outer face of the bolt box\n  boxHalfHeight: number = 14,\n  pocketBack: number = -25,  // inner face of the bolt box (6.5 mm wall)\n  pocketHalfHeight: number = 7.25,\n  pocketFront: number = -14.5, // where the pocket opens into the seat\n  seatR: number = 14.5,      // round seat: closes on a 29 mm pipe, same as the jaw\n  vAngle: number = 36.6,     // slope of the arms' inner edges, degrees\n  upperPinX: number = -5, upperPinY: number = 22, upperKnuckleR: number = 5.5,\n  lowerPinX: number = -7, lowerPinY: number = -24, lowerKnuckleR: number = 6,\n): Assembly {\n  const t = Math.tan((vAngle * Math.PI) / 180);\n  const vy = (x: number) => pocketHalfHeight + t * (x - pocketFront);\n  // Solid out to the arms, then the seat circle is cut out of it. Arm corners sit well\n  // inside the knuckle circles so the outline crosses them cleanly.\n  const outline = replicad\n    .draw([boxBack, -boxHalfHeight])\n    .lineTo([-17, -boxHalfHeight])\n    .lineTo([lowerPinX - 3, lowerPinY - 4.8])\n    .lineTo([lowerPinX + 5.8, lowerPinY - 1])\n    .lineTo([-0.7, -vy(-0.7)])\n    .lineTo([-0.7, -pocketHalfHeight - 1])\n    .lineTo([pocketFront, -pocketHalfHeight])\n    .lineTo([pocketBack, -pocketHalfHeight])\n    .lineTo([pocketBack, pocketHalfHeight])\n    .lineTo([pocketFront, pocketHalfHeight])\n    .lineTo([-1, pocketHalfHeight + 1])\n    .lineTo([-1, vy(-1)])\n    .lineTo([upperPinX + 4.5, upperPinY + 1])\n    .lineTo([upperPinX - 4, upperPinY + 3.5])\n    .lineTo([-18, boxHalfHeight])\n    .lineTo([boxBack, boxHalfHeight])\n    .close();\n  const knuckles = replicad\n    .drawCircle(upperKnuckleR).translate(upperPinX, upperPinY)\n    .fuse(replicad.drawCircle(lowerKnuckleR).translate(lowerPinX, lowerPinY));\n  const seat = replicad.drawCircle(seatR);\n  return new Assembly({ geometry: outline.fuse(knuckles).cut(seat) });\n}\n",
+              "compiledCode": "\"use strict\";\n/**\n * Clamp Body outline (top view), in mm. Pipe center at the origin; the body's side of the\n * opening is a round seat matching the jaw, so a 29 mm pipe is held all the way round.\n * Box, arms and hinge positions measured from the top-down photo on the 1/2\" mat.\n */\nfunction run(boxBack = -31.5, // outer face of the bolt box\nboxHalfHeight = 14, pocketBack = -25, // inner face of the bolt box (6.5 mm wall)\npocketHalfHeight = 7.25, pocketFront = -14.5, // where the pocket opens into the seat\nseatR = 14.5, // round seat: closes on a 29 mm pipe, same as the jaw\nvAngle = 36.6, // slope of the arms' inner edges, degrees\nupperPinX = -5, upperPinY = 22, upperKnuckleR = 5.5, lowerPinX = -7, lowerPinY = -24, lowerKnuckleR = 6) {\n    const t = Math.tan((vAngle * Math.PI) / 180);\n    const vy = (x) => pocketHalfHeight + t * (x - pocketFront);\n    // Solid out to the arms, then the seat circle is cut out of it. Arm corners sit well\n    // inside the knuckle circles so the outline crosses them cleanly.\n    const outline = replicad\n        .draw([boxBack, -boxHalfHeight])\n        .lineTo([-17, -boxHalfHeight])\n        .lineTo([lowerPinX - 3, lowerPinY - 4.8])\n        .lineTo([lowerPinX + 5.8, lowerPinY - 1])\n        .lineTo([-0.7, -vy(-0.7)])\n        .lineTo([-0.7, -pocketHalfHeight - 1])\n        .lineTo([pocketFront, -pocketHalfHeight])\n        .lineTo([pocketBack, -pocketHalfHeight])\n        .lineTo([pocketBack, pocketHalfHeight])\n        .lineTo([pocketFront, pocketHalfHeight])\n        .lineTo([-1, pocketHalfHeight + 1])\n        .lineTo([-1, vy(-1)])\n        .lineTo([upperPinX + 4.5, upperPinY + 1])\n        .lineTo([upperPinX - 4, upperPinY + 3.5])\n        .lineTo([-18, boxHalfHeight])\n        .lineTo([boxBack, boxHalfHeight])\n        .close();\n    const knuckles = replicad\n        .drawCircle(upperKnuckleR).translate(upperPinX, upperPinY)\n        .fuse(replicad.drawCircle(lowerKnuckleR).translate(lowerPinX, lowerPinY));\n    const seat = replicad.drawCircle(seatR);\n    return new Assembly({ geometry: outline.fuse(knuckles).cut(seat) });\n}\n"
             },
             {
               "atomType": "Extrude",
@@ -2777,7 +2781,7 @@
         },
         {
           "atomType": "Molecule",
-          "x": 0.3,
+          "x": 0.2,
           "y": 0.4,
           "uniqueID": "id-604",
           "name": "Clasp",
@@ -2900,6 +2904,243 @@
                 }
               ],
               "unionType": "Fusion"
+            },
+            {
+              "atomType": "Molecule",
+              "x": 0.7,
+              "y": 0.2,
+              "uniqueID": "id-1299",
+              "name": "Cut Away",
+              "topLevel": false,
+              "allAtoms": [
+                {
+                  "atomType": "Output",
+                  "x": 1,
+                  "y": 0.5,
+                  "uniqueID": "id-1301",
+                  "ioValues": [
+                    {
+                      "name": "number or geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Circle",
+                  "x": 0.4,
+                  "y": 0.6,
+                  "uniqueID": "id-1303",
+                  "ioValues": [
+                    {
+                      "name": "diameter",
+                      "ioValue": 11
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Move",
+                  "x": 0.4,
+                  "y": 0.3,
+                  "uniqueID": "id-1306",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "xDist",
+                      "ioValue": 30,
+                      "currentEquation": "30"
+                    },
+                    {
+                      "name": "yDist",
+                      "ioValue": 0
+                    },
+                    {
+                      "name": "zDist",
+                      "ioValue": 0
+                    }
+                  ]
+                },
+                {
+                  "atomType": "ShrinkWrap",
+                  "x": 0.5,
+                  "y": 0.6,
+                  "uniqueID": "id-1312",
+                  "name": "Shrink Wrap",
+                  "ioValues": [
+                    {
+                      "name": "Shape 1",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape2",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape3",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape 1",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape2",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape3",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Extrude",
+                  "x": 0.6,
+                  "y": 0.8,
+                  "uniqueID": "id-1317",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "height",
+                      "ioValue": 10
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Rotate",
+                  "x": 0.7,
+                  "y": 0.5,
+                  "uniqueID": "id-1321",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "x-axis degrees",
+                      "ioValue": 90,
+                      "currentEquation": "90"
+                    },
+                    {
+                      "name": "y-axis degrees",
+                      "ioValue": 0
+                    },
+                    {
+                      "name": "z-axis degrees",
+                      "ioValue": 90,
+                      "currentEquation": "90"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Move",
+                  "x": 0.8,
+                  "y": 0.5,
+                  "uniqueID": "id-1327",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "xDist",
+                      "ioValue": 0
+                    },
+                    {
+                      "name": "yDist",
+                      "ioValue": 0
+                    },
+                    {
+                      "name": "zDist",
+                      "ioValue": 15,
+                      "currentEquation": "15"
+                    }
+                  ]
+                }
+              ],
+              "allConnectors": [
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1303",
+                  "ap2ID": "id-1306"
+                },
+                {
+                  "ap2Name": "Shape2",
+                  "ap1ID": "id-1303",
+                  "ap2ID": "id-1312"
+                },
+                {
+                  "ap2Name": "Shape 1",
+                  "ap1ID": "id-1306",
+                  "ap2ID": "id-1312"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1312",
+                  "ap2ID": "id-1317"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1317",
+                  "ap2ID": "id-1321"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1321",
+                  "ap2ID": "id-1327"
+                },
+                {
+                  "ap2Name": "number or geometry",
+                  "ap1ID": "id-1327",
+                  "ap2ID": "id-1301"
+                }
+              ],
+              "fileTypeVersion": 1
+            },
+            {
+              "atomType": "Move",
+              "x": 0.8,
+              "y": 0.3,
+              "uniqueID": "id-1333",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "xDist",
+                  "ioValue": 5
+                },
+                {
+                  "name": "yDist",
+                  "ioValue": 23
+                },
+                {
+                  "name": "zDist",
+                  "ioValue": 0
+                }
+              ]
+            },
+            {
+              "atomType": "Difference",
+              "x": 0.8,
+              "y": 0.4,
+              "uniqueID": "id-1339",
+              "ioValues": [
+                {
+                  "name": "retain",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "remove",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ]
             },
             {
               "atomType": "Output",
@@ -3474,9 +3715,9 @@
               "ap2ID": "id-1230"
             },
             {
-              "ap2Name": "number or geometry",
+              "ap2Name": "retain",
               "ap1ID": "id-1220",
-              "ap2ID": "id-606"
+              "ap2ID": "id-1339"
             },
             {
               "ap2Name": "Shape 1",
@@ -3487,6 +3728,21 @@
               "ap2Name": "remove",
               "ap1ID": "id-1230",
               "ap2ID": "id-1220"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1299",
+              "ap2ID": "id-1333"
+            },
+            {
+              "ap2Name": "remove",
+              "ap1ID": "id-1333",
+              "ap2ID": "id-1339"
+            },
+            {
+              "ap2Name": "number or geometry",
+              "ap1ID": "id-1339",
+              "ap2ID": "id-606"
             },
             {
               "ap2Name": "geometry",
