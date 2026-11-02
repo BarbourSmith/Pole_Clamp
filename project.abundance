@@ -372,7 +372,7 @@
                   "ioValues": [
                     {
                       "name": "pivotX",
-                      "ioValue": 39.4
+                      "ioValue": 38.9
                     },
                     {
                       "name": "pivotY",
@@ -380,32 +380,20 @@
                     },
                     {
                       "name": "bossR",
-                      "ioValue": 10
+                      "ioValue": 9.5
                     },
                     {
                       "name": "handleLength",
                       "ioValue": 65
                     },
                     {
-                      "name": "rootWidth",
-                      "ioValue": 12.5
-                    },
-                    {
-                      "name": "tipWidth",
-                      "ioValue": 7
-                    },
-                    {
                       "name": "angle",
                       "ioValue": -95
-                    },
-                    {
-                      "name": "curl",
-                      "ioValue": 4
                     }
                   ],
                   "interpreterVersion": 1,
-                  "code": "/**\n * Cam lever outline (top view), in mm: a round boss around the pivot barrel and a\n * handle that tapers to a slightly bulbous rounded tip with an outward curl, as in the photos.\n */\nfunction run(\n  pivotX: number = 37.5, pivotY: number = 22,\n  bossR: number = 10,\n  handleLength: number = 65, // pivot center to tip center\n  rootWidth: number = 12.5,\n  tipWidth: number = 7,\n  angle: number = -95,       // handle direction, degrees from +X (closed: pointing down)\n  curl: number = 4,          // sideways bow of the handle toward its tip\n): Assembly {\n  const a = (angle * Math.PI) / 180;\n  const d = [Math.cos(a), Math.sin(a)];\n  const n = [-d[1], d[0]];\n  const at = (s: number, off: number) => {\n    const bow = curl * (s / handleLength) ** 2;\n    return [pivotX + d[0] * s + n[0] * (off + bow), pivotY + d[1] * s + n[1] * (off + bow)];\n  };\n  const w = (s: number) => rootWidth + (tipWidth - rootWidth) * (s / handleLength);\n  const steps = 10;\n  let pen = replicad.draw(at(0, w(0) / 2));\n  for (let i = 1; i <= steps; i++) {\n    const s = (handleLength * i) / steps;\n    pen = pen.lineTo(at(s, w(s) / 2));\n  }\n  for (let i = steps; i >= 0; i--) {\n    const s = (handleLength * i) / steps;\n    pen = pen.lineTo(at(s, -w(s) / 2));\n  }\n  const handle = pen.close();\n  const tip = at(handleLength, 0);\n  // Tip knob a little wider than the handle so its circle isn't tangent to the sides.\n  const outline = handle\n    .fuse(replicad.drawCircle(bossR).translate(pivotX, pivotY))\n    .fuse(replicad.drawCircle(tipWidth / 2 + 0.6).translate(tip[0], tip[1]));\n  return new Assembly({ geometry: outline });\n}\n",
-                  "compiledCode": "\"use strict\";\n/**\n * Cam lever outline (top view), in mm: a round boss around the pivot barrel and a\n * handle that tapers to a slightly bulbous rounded tip with an outward curl, as in the photos.\n */\nfunction run(pivotX = 37.5, pivotY = 22, bossR = 10, handleLength = 65, // pivot center to tip center\nrootWidth = 12.5, tipWidth = 7, angle = -95, // handle direction, degrees from +X (closed: pointing down)\ncurl = 4) {\n    const a = (angle * Math.PI) / 180;\n    const d = [Math.cos(a), Math.sin(a)];\n    const n = [-d[1], d[0]];\n    const at = (s, off) => {\n        const bow = curl * (s / handleLength) ** 2;\n        return [pivotX + d[0] * s + n[0] * (off + bow), pivotY + d[1] * s + n[1] * (off + bow)];\n    };\n    const w = (s) => rootWidth + (tipWidth - rootWidth) * (s / handleLength);\n    const steps = 10;\n    let pen = replicad.draw(at(0, w(0) / 2));\n    for (let i = 1; i <= steps; i++) {\n        const s = (handleLength * i) / steps;\n        pen = pen.lineTo(at(s, w(s) / 2));\n    }\n    for (let i = steps; i >= 0; i--) {\n        const s = (handleLength * i) / steps;\n        pen = pen.lineTo(at(s, -w(s) / 2));\n    }\n    const handle = pen.close();\n    const tip = at(handleLength, 0);\n    // Tip knob a little wider than the handle so its circle isn't tangent to the sides.\n    const outline = handle\n        .fuse(replicad.drawCircle(bossR).translate(pivotX, pivotY))\n        .fuse(replicad.drawCircle(tipWidth / 2 + 0.6).translate(tip[0], tip[1]));\n    return new Assembly({ geometry: outline });\n}\n"
+                  "code": "/**\n * Cam lever outline (top view), in mm: a round boss around the pivot barrel and a slender\n * handle traced from the top-down photo. Along the handle (s, from the pivot) the photo\n * gives its centerline offset (+ is to the left looking from pivot to tip) and its width:\n * it bows left near the root, crosses over, bows right, then the tip turns back up.\n */\nconst CENTER: number[][] = [ // [s, offset] for a 65 mm handle\n  [0, 0], [12, 2.5], [22, 3.0], [32, 2.5], [42, 0.5], [52, -2.2], [58, -2.8], [62, -1.8], [65, 0.5],\n];\nconst WIDTH: number[][] = [ // [s, width]\n  [0, 14], [12, 10], [22, 7.4], [32, 5.5], [42, 3.9], [52, 3.7], [58, 3.6], [65, 3.2],\n];\n\nfunction run(\n  pivotX: number = 39.4, pivotY: number = 22,\n  bossR: number = 9.5,\n  handleLength: number = 65, // pivot center to tip\n  angle: number = -95,       // pivot-to-tip direction, degrees from +X (closed: pointing down)\n): Assembly {\n  const k = handleLength / 65;\n  const lerp = (table: number[][], s: number) => {\n    for (let i = 1; i < table.length; i++) {\n      const [s0, v0] = table[i - 1];\n      const [s1, v1] = table[i];\n      if (s <= s1 * k) return v0 + ((v1 - v0) * (s - s0 * k)) / ((s1 - s0) * k);\n    }\n    return table[table.length - 1][1];\n  };\n  const a = (angle * Math.PI) / 180;\n  const d = [Math.cos(a), Math.sin(a)];\n  const n = [-d[1], d[0]];\n  const at = (s: number, off: number) =>\n    [pivotX + d[0] * s + n[0] * off, pivotY + d[1] * s + n[1] * off];\n\n  const steps = 26;\n  const ss = Array.from({ length: steps + 1 }, (_, i) => (handleLength * i) / steps);\n  let pen = replicad.draw(at(0, lerp(CENTER, 0) + lerp(WIDTH, 0) / 2));\n  for (const s of ss.slice(1)) pen = pen.lineTo(at(s, lerp(CENTER, s) + lerp(WIDTH, s) / 2));\n  for (const s of [...ss].reverse()) pen = pen.lineTo(at(s, lerp(CENTER, s) - lerp(WIDTH, s) / 2));\n  const handle = pen.close();\n\n  // Rounded tip a little wider than the handle so it isn't tangent to the sides.\n  const tipR = lerp(WIDTH, handleLength) / 2 + 0.4;\n  const tip = at(handleLength, lerp(CENTER, handleLength));\n  const outline = handle\n    .fuse(replicad.drawCircle(bossR).translate(pivotX, pivotY))\n    .fuse(replicad.drawCircle(tipR).translate(tip[0], tip[1]));\n  return new Assembly({ geometry: outline });\n}\n",
+                  "compiledCode": "\"use strict\";\n/**\n * Cam lever outline (top view), in mm: a round boss around the pivot barrel and a slender\n * handle traced from the top-down photo. Along the handle (s, from the pivot) the photo\n * gives its centerline offset (+ is to the left looking from pivot to tip) and its width:\n * it bows left near the root, crosses over, bows right, then the tip turns back up.\n */\nconst CENTER = [\n    [0, 0], [12, 2.5], [22, 3.0], [32, 2.5], [42, 0.5], [52, -2.2], [58, -2.8], [62, -1.8], [65, 0.5],\n];\nconst WIDTH = [\n    [0, 14], [12, 10], [22, 7.4], [32, 5.5], [42, 3.9], [52, 3.7], [58, 3.6], [65, 3.2],\n];\nfunction run(pivotX = 39.4, pivotY = 22, bossR = 9.5, handleLength = 65, // pivot center to tip\nangle = -95) {\n    const k = handleLength / 65;\n    const lerp = (table, s) => {\n        for (let i = 1; i < table.length; i++) {\n            const [s0, v0] = table[i - 1];\n            const [s1, v1] = table[i];\n            if (s <= s1 * k)\n                return v0 + ((v1 - v0) * (s - s0 * k)) / ((s1 - s0) * k);\n        }\n        return table[table.length - 1][1];\n    };\n    const a = (angle * Math.PI) / 180;\n    const d = [Math.cos(a), Math.sin(a)];\n    const n = [-d[1], d[0]];\n    const at = (s, off) => [pivotX + d[0] * s + n[0] * off, pivotY + d[1] * s + n[1] * off];\n    const steps = 26;\n    const ss = Array.from({ length: steps + 1 }, (_, i) => (handleLength * i) / steps);\n    let pen = replicad.draw(at(0, lerp(CENTER, 0) + lerp(WIDTH, 0) / 2));\n    for (const s of ss.slice(1))\n        pen = pen.lineTo(at(s, lerp(CENTER, s) + lerp(WIDTH, s) / 2));\n    for (const s of [...ss].reverse())\n        pen = pen.lineTo(at(s, lerp(CENTER, s) - lerp(WIDTH, s) / 2));\n    const handle = pen.close();\n    // Rounded tip a little wider than the handle so it isn't tangent to the sides.\n    const tipR = lerp(WIDTH, handleLength) / 2 + 0.4;\n    const tip = at(handleLength, lerp(CENTER, handleLength));\n    const outline = handle\n        .fuse(replicad.drawCircle(bossR).translate(pivotX, pivotY))\n        .fuse(replicad.drawCircle(tipR).translate(tip[0], tip[1]));\n    return new Assembly({ geometry: outline });\n}\n"
                 },
                 {
                   "atomType": "Extrude",
@@ -515,7 +503,7 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": 38.31
+                      "ioValue": 37.81
                     },
                     {
                       "name": "yDist",
@@ -648,7 +636,7 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": 39.4
+                      "ioValue": 38.9
                     },
                     {
                       "name": "yDist",
@@ -960,7 +948,7 @@
                     },
                     {
                       "name": "height",
-                      "ioValue": 45.8
+                      "ioValue": 45.3
                     }
                   ]
                 },
@@ -2194,7 +2182,7 @@
             {
               "atomType": "Molecule",
               "x": 0.2,
-              "y": 0.4,
+              "y": 0.2,
               "uniqueID": "id-1424",
               "name": "Post",
               "topLevel": false,
@@ -2223,14 +2211,977 @@
                       "currentEquation": "7"
                     }
                   ]
+                },
+                {
+                  "atomType": "Extrude",
+                  "x": 0.4,
+                  "y": 0.4,
+                  "uniqueID": "id-1437",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "height",
+                      "ioValue": 47,
+                      "currentEquation": "47"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Fusion",
+                  "x": 0.6,
+                  "y": 0.5,
+                  "uniqueID": "id-1441",
+                  "ioValues": [
+                    {
+                      "name": "Shape 1",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape2",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    }
+                  ],
+                  "unionType": "Fusion"
+                },
+                {
+                  "atomType": "Circle",
+                  "x": 0.3,
+                  "y": 0.9,
+                  "uniqueID": "id-1445",
+                  "ioValues": [
+                    {
+                      "name": "diameter",
+                      "ioValue": 18,
+                      "currentEquation": "18"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Extrude",
+                  "x": 0.4,
+                  "y": 0.9,
+                  "uniqueID": "id-1448",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "height",
+                      "ioValue": 9,
+                      "currentEquation": "9"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Move",
+                  "x": 0.5,
+                  "y": 0.9,
+                  "uniqueID": "id-1452",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "xDist",
+                      "ioValue": 0
+                    },
+                    {
+                      "name": "yDist",
+                      "ioValue": 0
+                    },
+                    {
+                      "name": "zDist",
+                      "ioValue": 20,
+                      "currentEquation": "20"
+                    }
+                  ]
                 }
               ],
-              "allConnectors": [],
+              "allConnectors": [
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1428",
+                  "ap2ID": "id-1437"
+                },
+                {
+                  "ap2Name": "Shape 1",
+                  "ap1ID": "id-1437",
+                  "ap2ID": "id-1441"
+                },
+                {
+                  "ap2Name": "number or geometry",
+                  "ap1ID": "id-1441",
+                  "ap2ID": "id-1426"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1445",
+                  "ap2ID": "id-1448"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1448",
+                  "ap2ID": "id-1452"
+                },
+                {
+                  "ap2Name": "Shape2",
+                  "ap1ID": "id-1452",
+                  "ap2ID": "id-1441"
+                }
+              ],
               "fileTypeVersion": 1
+            },
+            {
+              "atomType": "Rotate",
+              "x": 0.4,
+              "y": 0.2,
+              "uniqueID": "id-1459",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "x-axis degrees",
+                  "ioValue": 0
+                },
+                {
+                  "name": "y-axis degrees",
+                  "ioValue": 90,
+                  "currentEquation": "90"
+                },
+                {
+                  "name": "z-axis degrees",
+                  "ioValue": 0
+                }
+              ]
+            },
+            {
+              "atomType": "Fusion",
+              "x": 0.5,
+              "y": 0.3,
+              "uniqueID": "id-1465",
+              "ioValues": [
+                {
+                  "name": "Shape 1",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ],
+              "unionType": "Fusion"
+            },
+            {
+              "atomType": "Rectangle",
+              "x": 0.2,
+              "y": 0.4,
+              "uniqueID": "id-1482",
+              "ioValues": [
+                {
+                  "name": "x length",
+                  "ioValue": 15
+                },
+                {
+                  "name": "y length",
+                  "ioValue": 20
+                }
+              ]
+            },
+            {
+              "atomType": "Extrude",
+              "x": 0.3,
+              "y": 0.4,
+              "uniqueID": "id-1483",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "height",
+                  "ioValue": 9,
+                  "currentEquation": "9"
+                }
+              ]
+            },
+            {
+              "atomType": "Color",
+              "x": 0.5,
+              "y": 0.4,
+              "uniqueID": "id-1496",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ],
+              "selectedColor": "Keep Out"
+            },
+            {
+              "atomType": "Assembly",
+              "x": 0.8,
+              "y": 0.6,
+              "uniqueID": "id-1499",
+              "ioValues": [
+                {
+                  "name": "makeDisjoint",
+                  "ioValue": true
+                },
+                {
+                  "name": "Shape 1",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "Shape2",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "Shape3",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "Shape4",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ]
+            },
+            {
+              "atomType": "Move",
+              "x": 0.6,
+              "y": 0.5,
+              "uniqueID": "id-1503",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "xDist",
+                  "ioValue": 0
+                },
+                {
+                  "name": "yDist",
+                  "ioValue": 0
+                },
+                {
+                  "name": "zDist",
+                  "ioValue": -4.5,
+                  "currentEquation": "-4.5"
+                }
+              ]
+            },
+            {
+              "atomType": "Molecule",
+              "x": 0.4,
+              "y": 0.8,
+              "uniqueID": "id-1518",
+              "name": "Arm",
+              "topLevel": false,
+              "allAtoms": [
+                {
+                  "atomType": "Output",
+                  "x": 1,
+                  "y": 0.5,
+                  "uniqueID": "id-1520",
+                  "ioValues": [
+                    {
+                      "name": "number or geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Circle",
+                  "x": 0.2,
+                  "y": 0.2,
+                  "uniqueID": "id-1522",
+                  "ioValues": [
+                    {
+                      "name": "diameter",
+                      "ioValue": 11
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Extrude",
+                  "x": 0.4,
+                  "y": 0.2,
+                  "uniqueID": "id-1523",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "height",
+                      "ioValue": 20
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Circle",
+                  "x": 0.2,
+                  "y": 0.5,
+                  "uniqueID": "id-1531",
+                  "ioValues": [
+                    {
+                      "name": "diameter",
+                      "ioValue": 22,
+                      "currentEquation": "22"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Extrude",
+                  "x": 0.3,
+                  "y": 0.5,
+                  "uniqueID": "id-1534",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "height",
+                      "ioValue": 20,
+                      "currentEquation": "20"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Move",
+                  "x": 0.5,
+                  "y": 0.5,
+                  "uniqueID": "id-1538",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "xDist",
+                      "ioValue": 2
+                    },
+                    {
+                      "name": "yDist",
+                      "ioValue": -3
+                    },
+                    {
+                      "name": "zDist",
+                      "ioValue": 0
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Assembly",
+                  "x": 0.7,
+                  "y": 0.4,
+                  "uniqueID": "id-1544",
+                  "ioValues": [
+                    {
+                      "name": "makeDisjoint",
+                      "ioValue": true
+                    },
+                    {
+                      "name": "Shape 1",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape2",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape3",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Rectangle",
+                  "x": 0.2,
+                  "y": 0.9,
+                  "uniqueID": "id-1550",
+                  "ioValues": [
+                    {
+                      "name": "x length",
+                      "ioValue": 7
+                    },
+                    {
+                      "name": "y length",
+                      "ioValue": 60,
+                      "currentEquation": "60"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Move",
+                  "x": 0.3,
+                  "y": 0.7,
+                  "uniqueID": "id-1554",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "xDist",
+                      "ioValue": 9
+                    },
+                    {
+                      "name": "yDist",
+                      "ioValue": -30
+                    },
+                    {
+                      "name": "zDist",
+                      "ioValue": 0
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Fusion",
+                  "x": 0.5,
+                  "y": 0.7,
+                  "uniqueID": "id-1560",
+                  "ioValues": [
+                    {
+                      "name": "Shape 1",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape2",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    }
+                  ],
+                  "unionType": "Fusion"
+                },
+                {
+                  "atomType": "Extrude",
+                  "x": 0.4,
+                  "y": 0.8,
+                  "uniqueID": "id-1565",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "height",
+                      "ioValue": 20,
+                      "currentEquation": "20"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "GitHubMolecule",
+                  "x": 0.6,
+                  "y": 0.9,
+                  "uniqueID": "id-1585",
+                  "name": "selected.Fillet",
+                  "ioValues": [
+                    {
+                      "name": "shape",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "radius",
+                      "ioValue": 52
+                    }
+                  ],
+                  "topLevel": false,
+                  "allAtoms": [
+                    {
+                      "atomType": "Output",
+                      "x": 1,
+                      "y": 0.5,
+                      "uniqueID": "id-1574",
+                      "ioValues": [
+                        {
+                          "name": "number or geometry",
+                          "ioValue": "__GEOMETRY_INPUT__"
+                        }
+                      ]
+                    },
+                    {
+                      "atomType": "Code",
+                      "x": 0.3,
+                      "y": 0.6,
+                      "uniqueID": "id-1575",
+                      "ioValues": [
+                        {
+                          "name": "toFillet",
+                          "ioValue": "__GEOMETRY_INPUT__"
+                        },
+                        {
+                          "name": "radius",
+                          "ioValue": 52
+                        }
+                      ],
+                      "interpreterVersion": 1,
+                      "code": "function run(toFillet: Assembly, radius: number) {\n  return toFillet.onLeafs((leaf) => {\n    if (leaf.geometry instanceof replicad.Drawing || !replicad.isShape3D(leaf.geometry)) {\n      return leaf;\n    }\n    if (leaf.selection?.part) {\n      leaf.geometry = leaf.geometry.fillet(radius)\n      return leaf;\n    }\n    // else apply only to filtered faces and edges\n    let edgesToFillet: replicad.Edge[] = []\n    if (leaf.selection?.faces) {\n      leaf.selection.faces.forEach((faceIndex) => {\n        edgesToFillet.push(...leaf.geometry.faces[faceIndex].edges)\n      });\n    }\n    console.log(edgesToFillet)\n    console.log(\"intermediate\")\n    console.log(leaf.selection)\n    if (leaf.selection?.edges) {\n      edgesToFillet.push(...leaf.selection.edges.map((index) => leaf.geometry.edges[index]))\n    }\n    if (edgesToFillet.length == 0) {\n      return leaf;\n    }\n    edgesToFillet = edgesToFillet.filter((e) => e != null)\n    if (edgesToFillet.length == 0) {\n      return leaf.geometry\n    }\n    console.log(edgesToFillet)\n    leaf.geometry = leaf.geometry.fillet(radius, (e) => { return e.inList(edgesToFillet.map((e) => e.clone())) })\n    return leaf;\n  })\n}",
+                      "compiledCode": "\"use strict\";\nfunction run(toFillet, radius) {\n    return toFillet.onLeafs((leaf) => {\n        if (leaf.geometry instanceof replicad.Drawing || !replicad.isShape3D(leaf.geometry)) {\n            return leaf;\n        }\n        if (leaf.selection?.part) {\n            leaf.geometry = leaf.geometry.fillet(radius);\n            return leaf;\n        }\n        // else apply only to filtered faces and edges\n        let edgesToFillet = [];\n        if (leaf.selection?.faces) {\n            leaf.selection.faces.forEach((faceIndex) => {\n                edgesToFillet.push(...leaf.geometry.faces[faceIndex].edges);\n            });\n        }\n        console.log(edgesToFillet);\n        console.log(\"intermediate\");\n        console.log(leaf.selection);\n        if (leaf.selection?.edges) {\n            edgesToFillet.push(...leaf.selection.edges.map((index) => leaf.geometry.edges[index]));\n        }\n        if (edgesToFillet.length == 0) {\n            return leaf;\n        }\n        edgesToFillet = edgesToFillet.filter((e) => e != null);\n        if (edgesToFillet.length == 0) {\n            return leaf.geometry;\n        }\n        console.log(edgesToFillet);\n        leaf.geometry = leaf.geometry.fillet(radius, (e) => { return e.inList(edgesToFillet.map((e) => e.clone())); });\n        return leaf;\n    });\n}\n"
+                    },
+                    {
+                      "atomType": "Input",
+                      "x": 0,
+                      "y": 0.2,
+                      "uniqueID": "id-1576",
+                      "name": "shape",
+                      "type": "edgeselect",
+                      "options": [],
+                      "selectedEdgeData": {
+                        "0": [
+                          6
+                        ]
+                      }
+                    },
+                    {
+                      "atomType": "Input",
+                      "x": 0,
+                      "y": 0.2,
+                      "uniqueID": "id-1577",
+                      "name": "radius",
+                      "options": []
+                    },
+                    {
+                      "atomType": "GitHubMolecule",
+                      "x": 0.5,
+                      "y": 0.5,
+                      "uniqueID": "id-1578",
+                      "name": "select.Clear",
+                      "ioValues": [
+                        {
+                          "name": "selection",
+                          "ioValue": "__GEOMETRY_INPUT__"
+                        },
+                        {
+                          "name": "clearEdges",
+                          "ioValue": 10
+                        },
+                        {
+                          "name": "clearFaces",
+                          "ioValue": false
+                        },
+                        {
+                          "name": "clearParts",
+                          "ioValue": false
+                        }
+                      ],
+                      "topLevel": false,
+                      "allAtoms": [
+                        {
+                          "atomType": "Output",
+                          "x": 1,
+                          "y": 0.5,
+                          "uniqueID": "id-1579",
+                          "ioValues": [
+                            {
+                              "name": "number or geometry",
+                              "ioValue": "__GEOMETRY_INPUT__"
+                            }
+                          ]
+                        },
+                        {
+                          "atomType": "Code",
+                          "x": 0.4,
+                          "y": 0.7,
+                          "uniqueID": "id-1580",
+                          "ioValues": [
+                            {
+                              "name": "selection",
+                              "ioValue": "__GEOMETRY_INPUT__"
+                            },
+                            {
+                              "name": "clearFaces",
+                              "ioValue": false
+                            },
+                            {
+                              "name": "clearEdges",
+                              "ioValue": 10
+                            },
+                            {
+                              "name": "clearParts",
+                              "ioValue": false
+                            }
+                          ],
+                          "interpreterVersion": 1,
+                          "code": "function run(selection: Assembly, clearFaces: boolean, clearEdges: boolean, clearParts: boolean) {\n  return selection.onLeafs((leaf) => {\n    if (leaf.selection) {\n      if (clearFaces) leaf.selection.faces = []\n      if (clearEdges) leaf.selection.edges = []\n      if (clearParts) leaf.selection.part = false;\n    }\n    return leaf;\n  })?.skipDisjointPostprocess()\n}",
+                          "compiledCode": "\"use strict\";\nfunction run(selection, clearFaces, clearEdges, clearParts) {\n    return selection.onLeafs((leaf) => {\n        if (leaf.selection) {\n            if (clearFaces)\n                leaf.selection.faces = [];\n            if (clearEdges)\n                leaf.selection.edges = [];\n            if (clearParts)\n                leaf.selection.part = false;\n        }\n        return leaf;\n    })?.skipDisjointPostprocess();\n}\n"
+                        },
+                        {
+                          "atomType": "Input",
+                          "x": 0,
+                          "y": 0.2,
+                          "uniqueID": "id-1581",
+                          "name": "selection",
+                          "type": "geometry",
+                          "options": []
+                        },
+                        {
+                          "atomType": "Input",
+                          "x": 0,
+                          "y": 0.2,
+                          "uniqueID": "id-1582",
+                          "name": "clearEdges",
+                          "type": "boolean",
+                          "options": []
+                        },
+                        {
+                          "atomType": "Input",
+                          "x": 0,
+                          "y": 0.3,
+                          "uniqueID": "id-1583",
+                          "name": "clearFaces",
+                          "type": "boolean",
+                          "options": []
+                        },
+                        {
+                          "atomType": "Input",
+                          "x": 0,
+                          "y": 0.4,
+                          "uniqueID": "id-1584",
+                          "name": "clearParts",
+                          "type": "boolean",
+                          "options": []
+                        }
+                      ],
+                      "allConnectors": [
+                        {
+                          "ap2Name": "number or geometry",
+                          "ap1ID": "id-1580",
+                          "ap2ID": "id-1579"
+                        },
+                        {
+                          "ap2Name": "selection",
+                          "ap1ID": "id-1581",
+                          "ap2ID": "id-1580"
+                        },
+                        {
+                          "ap2Name": "clearEdges",
+                          "ap1ID": "id-1582",
+                          "ap2ID": "id-1580"
+                        },
+                        {
+                          "ap2Name": "clearFaces",
+                          "ap1ID": "id-1583",
+                          "ap2ID": "id-1580"
+                        },
+                        {
+                          "ap2Name": "clearParts",
+                          "ap1ID": "id-1584",
+                          "ap2ID": "id-1580"
+                        }
+                      ],
+                      "parentRepo": {
+                        "lastFoundGit": "2026-10-12T18:23:38.928Z",
+                        "privateRepo": false,
+                        "repoName": "select.Clear",
+                        "dateCreated": "2026-08-20T19:02:54Z",
+                        "likes": 0,
+                        "pngURL": "https://raw.githubusercontent.com/tristan-huber/select.Clear/master/project.png?sanitize=true",
+                        "readme": "https://raw.githubusercontent.com/tristan-huber/select.Clear/master/README.md?sanitize=true",
+                        "yyyy": 2026,
+                        "topMoleculeID": "",
+                        "userRanking": 0,
+                        "userSetAsThumbnail": false,
+                        "githubMoleculesUsed": [],
+                        "html_url": "https://github.com/tristan-huber/select.Clear",
+                        "topics": [
+                          "abundance-tool"
+                        ],
+                        "pullRequests": [],
+                        "forks": 0,
+                        "dateModified": "2026-09-03T20:46:51Z",
+                        "ranking": 2,
+                        "searchField": "select.clear tristan-huber clears selections on the input assembly. booleans control whether you clear edge selection, clear face selection, or clear part selection, or all of the above. abundance-tool",
+                        "owner": "tristan-huber",
+                        "description": "clears selections on the input assembly. Booleans control whether you clear edge selection, clear face selection, or clear part selection, or all of the above.",
+                        "contentURL": "https://raw.githubusercontent.com/tristan-huber/select.Clear/master/project.abundance?sanitize=true",
+                        "svgURL": "https://raw.githubusercontent.com/tristan-huber/select.Clear/master/project.svg?sanitize=true",
+                        "isLocal": false
+                      },
+                      "unitsKey": "Unitless",
+                      "fileTypeVersion": 1,
+                      "lastReloadedFromGithubAt": 1791834204755
+                    }
+                  ],
+                  "allConnectors": [
+                    {
+                      "ap2Name": "selection",
+                      "ap1ID": "id-1575",
+                      "ap2ID": "id-1578"
+                    },
+                    {
+                      "ap2Name": "toFillet",
+                      "ap1ID": "id-1576",
+                      "ap2ID": "id-1575"
+                    },
+                    {
+                      "ap2Name": "radius",
+                      "ap1ID": "id-1577",
+                      "ap2ID": "id-1575"
+                    },
+                    {
+                      "ap2Name": "number or geometry",
+                      "ap1ID": "id-1578",
+                      "ap2ID": "id-1574"
+                    }
+                  ],
+                  "parentRepo": {
+                    "contentURL": "https://raw.githubusercontent.com/tristan-huber/selected.Fillet/master/project.abundance?sanitize=true",
+                    "dateCreated": "2026-07-21T21:29:20Z",
+                    "dateModified": "739901",
+                    "description": "Fillet the only the selected edges of an assembly. You can also input face or sub-assembly selections, edges will be filleted if they meet any of the selection criteria, eg on a selected subassembly, on a selected face. Default fillets all edges.",
+                    "forks": 0,
+                    "githubMoleculesUsed": [
+                      {
+                        "owner": "tristan-huber",
+                        "repoName": "select.Clear"
+                      }
+                    ],
+                    "html_url": "https://github.com/tristan-huber/selected.Fillet",
+                    "lastFoundGit": "2026-11-02T10:23:38.905Z",
+                    "likes": 0,
+                    "owner": "tristan-huber",
+                    "pngURL": "https://raw.githubusercontent.com/tristan-huber/selected.Fillet/master/project.png?sanitize=true",
+                    "privateRepo": false,
+                    "projectInputs": [
+                      {
+                        "name": "shape",
+                        "type": "edgeselect"
+                      },
+                      {
+                        "name": "radius",
+                        "type": "number"
+                      }
+                    ],
+                    "pullRequests": [],
+                    "ranking": 3,
+                    "readme": "https://raw.githubusercontent.com/tristan-huber/selected.Fillet/master/README.md?sanitize=true",
+                    "searchField": "selected.fillet tristan-huber fillet the only the selected edges of an assembly. you can also input face or sub-assembly selections, edges will be filleted if they meet any of the selection criteria, eg on a selected subassembly, on a selected face. default fillets all edges. abundance-tool",
+                    "svgURL": "https://raw.githubusercontent.com/tristan-huber/selected.Fillet/master/project.svg?sanitize=true",
+                    "topMoleculeID": "",
+                    "topics": [
+                      "abundance-tool"
+                    ],
+                    "userRanking": 0,
+                    "userSetAsThumbnail": false,
+                    "yyyy": 2026,
+                    "repoName": "selected.Fillet",
+                    "isLocal": false
+                  },
+                  "unitsKey": "Unitless",
+                  "fileTypeVersion": 1,
+                  "scaleToProjectUnits": true,
+                  "lastReloadedFromGithubAt": 1793643791665
+                },
+                {
+                  "atomType": "Color",
+                  "x": 0.6,
+                  "y": 0.2,
+                  "uniqueID": "id-1615",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    }
+                  ],
+                  "selectedColor": "Teal"
+                }
+              ],
+              "allConnectors": [
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1522",
+                  "ap2ID": "id-1523"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1523",
+                  "ap2ID": "id-1615"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1531",
+                  "ap2ID": "id-1534"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1534",
+                  "ap2ID": "id-1538"
+                },
+                {
+                  "ap2Name": "Shape2",
+                  "ap1ID": "id-1538",
+                  "ap2ID": "id-1560"
+                },
+                {
+                  "ap2Name": "number or geometry",
+                  "ap1ID": "id-1544",
+                  "ap2ID": "id-1520"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1550",
+                  "ap2ID": "id-1554"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1554",
+                  "ap2ID": "id-1565"
+                },
+                {
+                  "ap2Name": "shape",
+                  "ap1ID": "id-1560",
+                  "ap2ID": "id-1585"
+                },
+                {
+                  "ap2Name": "Shape 1",
+                  "ap1ID": "id-1565",
+                  "ap2ID": "id-1560"
+                },
+                {
+                  "ap2Name": "Shape 1",
+                  "ap1ID": "id-1585",
+                  "ap2ID": "id-1544"
+                },
+                {
+                  "ap2Name": "Shape2",
+                  "ap1ID": "id-1615",
+                  "ap2ID": "id-1544"
+                }
+              ],
+              "fileTypeVersion": 1
+            },
+            {
+              "atomType": "Move",
+              "x": 0.5,
+              "y": 0.8,
+              "uniqueID": "id-1618",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "xDist",
+                  "ioValue": 34
+                },
+                {
+                  "name": "yDist",
+                  "ioValue": 0
+                },
+                {
+                  "name": "zDist",
+                  "ioValue": -10
+                }
+              ]
             }
           ],
-          "allConnectors": [],
+          "allConnectors": [
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1424",
+              "ap2ID": "id-1459"
+            },
+            {
+              "ap2Name": "Shape 1",
+              "ap1ID": "id-1459",
+              "ap2ID": "id-1465"
+            },
+            {
+              "ap2Name": "Shape2",
+              "ap1ID": "id-1465",
+              "ap2ID": "id-1499"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1482",
+              "ap2ID": "id-1483"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1483",
+              "ap2ID": "id-1496"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1496",
+              "ap2ID": "id-1503"
+            },
+            {
+              "ap2Name": "number or geometry",
+              "ap1ID": "id-1499",
+              "ap2ID": "id-1422"
+            },
+            {
+              "ap2Name": "Shape 1",
+              "ap1ID": "id-1503",
+              "ap2ID": "id-1499"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1518",
+              "ap2ID": "id-1618"
+            },
+            {
+              "ap2Name": "Shape3",
+              "ap1ID": "id-1618",
+              "ap2ID": "id-1499"
+            }
+          ],
           "fileTypeVersion": 1
+        },
+        {
+          "atomType": "Move",
+          "x": 0.6,
+          "y": 0.8,
+          "uniqueID": "id-1469",
+          "ioValues": [
+            {
+              "name": "geometry",
+              "ioValue": "__GEOMETRY_INPUT__"
+            },
+            {
+              "name": "xDist",
+              "ioValue": -2
+            },
+            {
+              "name": "yDist",
+              "ioValue": 20
+            },
+            {
+              "name": "zDist",
+              "ioValue": 15,
+              "currentEquation": "15"
+            }
+          ]
+        },
+        {
+          "atomType": "Rotate",
+          "x": 0.5,
+          "y": 0.9,
+          "uniqueID": "id-1475",
+          "ioValues": [
+            {
+              "name": "geometry",
+              "ioValue": "__GEOMETRY_INPUT__"
+            },
+            {
+              "name": "x-axis degrees",
+              "ioValue": 0
+            },
+            {
+              "name": "y-axis degrees",
+              "ioValue": 0
+            },
+            {
+              "name": "z-axis degrees",
+              "ioValue": 9
+            }
+          ]
         },
         {
           "atomType": "Output",
@@ -2911,6 +3862,10 @@
             },
             {
               "name": "Shape4",
+              "ioValue": "__GEOMETRY_INPUT__"
+            },
+            {
+              "name": "Shape5",
               "ioValue": "__GEOMETRY_INPUT__"
             }
           ]
@@ -4064,6 +5019,21 @@
           "ap2Name": "number or geometry",
           "ap1ID": "id-1401",
           "ap2ID": "id-432"
+        },
+        {
+          "ap2Name": "geometry",
+          "ap1ID": "id-1420",
+          "ap2ID": "id-1475"
+        },
+        {
+          "ap2Name": "Shape4",
+          "ap1ID": "id-1469",
+          "ap2ID": "id-568"
+        },
+        {
+          "ap2Name": "geometry",
+          "ap1ID": "id-1475",
+          "ap2ID": "id-1469"
         },
         {
           "ap2Name": "geometry",
