@@ -1750,8 +1750,7 @@
       "repoOwner": "BarbourSmith",
       "repoName": "Pole_Clamp",
       "gitRef": "HEAD",
-      "SVGwidth": 10,
-      "referenceWidth": 222.3
+      "SVGwidth": 10
     },
     {
       "atomType": "Rotate",
@@ -1871,8 +1870,7 @@
       "type": "JPG",
       "repoOwner": "BarbourSmith",
       "repoName": "Pole_Clamp",
-      "SVGwidth": 10,
-      "referenceWidth": 266.1
+      "SVGwidth": 10
     },
     {
       "atomType": "Molecule",
@@ -2733,8 +2731,8 @@
                     },
                     {
                       "atomType": "Input",
-                      "x": 0,
-                      "y": 0.2,
+                      "x": 0.0254,
+                      "y": 0.1538,
                       "uniqueID": "id-1576",
                       "name": "shape",
                       "type": "edgeselect",
@@ -2747,8 +2745,8 @@
                     },
                     {
                       "atomType": "Input",
-                      "x": 0,
-                      "y": 0.2,
+                      "x": 0.0254,
+                      "y": 0.2462,
                       "uniqueID": "id-1577",
                       "name": "radius",
                       "options": []
@@ -2820,8 +2818,8 @@
                         },
                         {
                           "atomType": "Input",
-                          "x": 0,
-                          "y": 0.2,
+                          "x": 0.0254,
+                          "y": 0.1538,
                           "uniqueID": "id-1581",
                           "name": "selection",
                           "type": "geometry",
@@ -2829,8 +2827,8 @@
                         },
                         {
                           "atomType": "Input",
-                          "x": 0,
-                          "y": 0.2,
+                          "x": 0.0254,
+                          "y": 0.2462,
                           "uniqueID": "id-1582",
                           "name": "clearEdges",
                           "type": "boolean",
@@ -2838,8 +2836,8 @@
                         },
                         {
                           "atomType": "Input",
-                          "x": 0,
-                          "y": 0.3,
+                          "x": 0.0254,
+                          "y": 0.3385,
                           "uniqueID": "id-1583",
                           "name": "clearFaces",
                           "type": "boolean",
@@ -2847,8 +2845,8 @@
                         },
                         {
                           "atomType": "Input",
-                          "x": 0,
-                          "y": 0.4,
+                          "x": 0.0254,
+                          "y": 0.4308,
                           "uniqueID": "id-1584",
                           "name": "clearParts",
                           "type": "boolean",
@@ -3191,6 +3189,315 @@
           ]
         },
         {
+          "atomType": "Molecule",
+          "x": 0.6997,
+          "y": 0.6563,
+          "uniqueID": "id-2382",
+          "name": "Molecule",
+          "ioValues": [
+            {
+              "name": "input",
+              "ioValue": "__GEOMETRY_INPUT__"
+            },
+            {
+              "name": "input_1",
+              "ioValue": "__GEOMETRY_INPUT__"
+            }
+          ],
+          "topLevel": false,
+          "allAtoms": [
+            {
+              "atomType": "Output",
+              "x": 0.98,
+              "y": 0.5,
+              "uniqueID": "id-2384",
+              "ioValues": [
+                {
+                  "name": "number or geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ]
+            },
+            {
+              "atomType": "Input",
+              "x": 0.0254,
+              "y": 0.1538,
+              "uniqueID": "id-2386",
+              "name": "input",
+              "type": "geometry",
+              "options": []
+            },
+            {
+              "atomType": "Input",
+              "x": 0.0254,
+              "y": 0.2462,
+              "uniqueID": "id-2389",
+              "name": "input_1",
+              "type": "geometry",
+              "options": []
+            },
+            {
+              "atomType": "Assembly",
+              "x": 0.1693,
+              "y": 0.7803,
+              "uniqueID": "id-2392",
+              "ioValues": [
+                {
+                  "name": "makeDisjoint",
+                  "ioValue": true
+                },
+                {
+                  "name": "Shape 1",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "Shape2",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "Shape3",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ]
+            },
+            {
+              "atomType": "Rectangle",
+              "x": 0.2255,
+              "y": 0.2761,
+              "uniqueID": "id-2398",
+              "ioValues": [
+                {
+                  "name": "x length",
+                  "ioValue": 40,
+                  "currentEquation": "40"
+                },
+                {
+                  "name": "y length",
+                  "ioValue": 53
+                }
+              ]
+            },
+            {
+              "atomType": "Extrude",
+              "x": 0.3274,
+              "y": 0.3014,
+              "uniqueID": "id-2402",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "height",
+                  "ioValue": 30,
+                  "currentEquation": "30"
+                }
+              ]
+            },
+            {
+              "atomType": "Move",
+              "x": 0.4074,
+              "y": 0.262,
+              "uniqueID": "id-2406",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "xDist",
+                  "ioValue": -20
+                },
+                {
+                  "name": "yDist",
+                  "ioValue": 0
+                },
+                {
+                  "name": "zDist",
+                  "ioValue": 0
+                }
+              ]
+            },
+            {
+              "atomType": "Difference",
+              "x": 0.6257,
+              "y": 0.5014,
+              "uniqueID": "id-2412",
+              "ioValues": [
+                {
+                  "name": "retain",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "remove",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ]
+            },
+            {
+              "atomType": "GitHubMolecule",
+              "x": 0.711,
+              "y": 0.4282,
+              "uniqueID": "id-2425",
+              "name": "IthFromAssembly",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "i",
+                  "ioValue": 0,
+                  "currentEquation": "0"
+                }
+              ],
+              "topLevel": false,
+              "allAtoms": [
+                {
+                  "atomType": "Output",
+                  "x": 0.98,
+                  "y": 0.5,
+                  "uniqueID": "id-2421",
+                  "ioValues": [
+                    {
+                      "name": "number or geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Code",
+                  "x": 0.5026,
+                  "y": 0.6845,
+                  "uniqueID": "id-2422",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "i",
+                      "ioValue": 0
+                    }
+                  ],
+                  "interpreterVersion": 0,
+                  "code": "\n      const Inputs = [\n       {inputName: \"geometry\", type: \"geometry\", defaultValue: null},\n      {inputName: \"i\", type: \"number\", defaultValue: 0},\n      ]\n      //This defines the molecules inputs and creates variables with the same names which can be referenced in the code\n\n      //Gets the shape from the library - no need to clone or access geometry directly\n      let importedShape = library[geometry]\n      let j = 0;\n      console.log(\"foo\")\n      console.log(importedShape)\n      const leafList = await AssemblyAsIterable(importedShape)\n      console.log(leafList)\n      if (i >= leafList.length) {\n        throw new Error(`Assembly only has ${leafList.length} entries. Tried to find index: ${i}.`)\n      }\n      return leafList[i]\n\n\n      /**\n      Built-in Functions Available:\n      - Move(geometry, x, y, z) - Move a shape in 3D space\n      - Rotate(geometry, x, y, z) - Rotate a shape around X, Y, Z axes (degrees)\n      - Scale(geometry, factor) - Scale a shape by a factor\n      - Assembly([shapes]) - Combine multiple shapes into an assembly\n      - Intersect(shape1, shape2) - Boolean intersection of two shapes\n      - GetBounds(geometry) - Get the bounding box of a shape\n      - Fillet(geometry, radius) - Round edges with specified radius\n      - Chamfer(geometry, size) - Bevel edges with specified size\n\n      To Use the Code Atom, enter your inputs to the input list as an object array:\n      const Inputs = [\n        {inputName: \"shape\", type: \"geometry\", defaultValue: null},\n        {inputName: \"dist\", type: \"number\", defaultValue: 5},\n        {inputName: \"height\", type: \"number\", defaultValue: 10}\n      ]\n\n      Access imported geometry using library[inputName] - the built-in functions handle \n      the complexity of accessing geometry arrays and maintaining metadata automatically.\n\n      Simple Example - Move a shape:\n         const Inputs = [\n          {inputName: \"shape\", type: \"geometry\", defaultValue: null},\n          {inputName: \"x\", type: \"number\", defaultValue: 5}\n        ]\n        let movedShape = await Move(library[shape], x, 0, 0)\n        return movedShape\n      */\n      "
+                },
+                {
+                  "atomType": "Input",
+                  "x": 0.0254,
+                  "y": 0.1538,
+                  "uniqueID": "id-2423",
+                  "name": "geometry",
+                  "type": "geometry",
+                  "options": []
+                },
+                {
+                  "atomType": "Input",
+                  "x": 0.0254,
+                  "y": 0.2462,
+                  "uniqueID": "id-2424",
+                  "name": "i",
+                  "type": "number",
+                  "options": []
+                }
+              ],
+              "allConnectors": [
+                {
+                  "ap2Name": "number or geometry",
+                  "ap1ID": "id-2422",
+                  "ap2ID": "id-2421"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-2423",
+                  "ap2ID": "id-2422"
+                },
+                {
+                  "ap2Name": "i",
+                  "ap1ID": "id-2424",
+                  "ap2ID": "id-2422"
+                }
+              ],
+              "parentRepo": {
+                "contentURL": "https://raw.githubusercontent.com/tristan-huber/IthFromAssembly/master/project.abundance?sanitize=true",
+                "dateCreated": "2025-11-03T02:49:44Z",
+                "dateModified": "2025-11-03T03:23:29Z",
+                "description": "Get the ith leaf from an assembly",
+                "forks": 1,
+                "githubMoleculesUsed": [],
+                "html_url": "https://github.com/tristan-huber/IthFromAssembly",
+                "lastFoundGit": "2026-11-02T18:23:39.020Z",
+                "likes": 0,
+                "owner": "tristan-huber",
+                "pngURL": "https://raw.githubusercontent.com/tristan-huber/IthFromAssembly/master/project.png?sanitize=true",
+                "privateRepo": false,
+                "pullRequests": [],
+                "ranking": 3,
+                "readme": "https://raw.githubusercontent.com/tristan-huber/IthFromAssembly/master/README.md?sanitize=true",
+                "searchField": "ithfromassembly tristan-huber get the ith leaf from an assembly abundance-tool",
+                "svgURL": "https://raw.githubusercontent.com/tristan-huber/IthFromAssembly/master/project.svg?sanitize=true",
+                "topMoleculeID": "",
+                "topics": [
+                  "abundance-tool"
+                ],
+                "userRanking": 0.2,
+                "userSetAsThumbnail": false,
+                "yyyy": 2025,
+                "repoName": "IthFromAssembly",
+                "isLocal": false
+              },
+              "unitsKey": "Unitless",
+              "fileTypeVersion": 1,
+              "scaleToProjectUnits": true,
+              "lastReloadedFromGithubAt": 1793656019511
+            }
+          ],
+          "allConnectors": [
+            {
+              "ap2Name": "Shape 1",
+              "ap1ID": "id-2386",
+              "ap2ID": "id-2392"
+            },
+            {
+              "ap2Name": "Shape2",
+              "ap1ID": "id-2389",
+              "ap2ID": "id-2392"
+            },
+            {
+              "ap2Name": "number or geometry",
+              "ap1ID": "id-2392",
+              "ap2ID": "id-2384"
+            },
+            {
+              "ap2Name": "remove",
+              "ap1ID": "id-2392",
+              "ap2ID": "id-2412"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-2398",
+              "ap2ID": "id-2402"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-2402",
+              "ap2ID": "id-2406"
+            },
+            {
+              "ap2Name": "retain",
+              "ap1ID": "id-2406",
+              "ap2ID": "id-2412"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-2412",
+              "ap2ID": "id-2425"
+            }
+          ],
+          "fileTypeVersion": 1
+        },
+        {
           "atomType": "Output",
           "x": 1,
           "y": 0.5,
@@ -3387,8 +3694,8 @@
                 },
                 {
                   "atomType": "Input",
-                  "x": 0,
-                  "y": 0.2,
+                  "x": 0.0254,
+                  "y": 0.1538,
                   "uniqueID": "id-486",
                   "name": "OD",
                   "type": "number",
@@ -3396,8 +3703,8 @@
                 },
                 {
                   "atomType": "Input",
-                  "x": 0,
-                  "y": 0.2,
+                  "x": 0.0254,
+                  "y": 0.2462,
                   "uniqueID": "id-487",
                   "name": "ID",
                   "type": "number",
@@ -3685,8 +3992,7 @@
                 },
                 {
                   "name": "xDist",
-                  "ioValue": 250.7,
-                  "currentEquation": "250.7"
+                  "ioValue": 250.7
                 },
                 {
                   "name": "yDist",
@@ -4572,8 +4878,8 @@
                     },
                     {
                       "atomType": "Input",
-                      "x": 0,
-                      "y": 0.2,
+                      "x": 0.0254,
+                      "y": 0.1538,
                       "uniqueID": "id-654",
                       "name": "OD",
                       "type": "number",
@@ -4581,8 +4887,8 @@
                     },
                     {
                       "atomType": "Input",
-                      "x": 0,
-                      "y": 0.2,
+                      "x": 0.0254,
+                      "y": 0.2462,
                       "uniqueID": "id-655",
                       "name": "ID",
                       "type": "number",
@@ -5003,6 +5309,11 @@
           "ap2ID": "id-1282"
         },
         {
+          "ap2Name": "input",
+          "ap1ID": "id-1282",
+          "ap2ID": "id-2382"
+        },
+        {
           "ap2Name": "Shape3",
           "ap1ID": "id-1282",
           "ap2ID": "id-568"
@@ -5031,6 +5342,11 @@
           "ap2Name": "geometry",
           "ap1ID": "id-434",
           "ap2ID": "id-1410"
+        },
+        {
+          "ap2Name": "input_1",
+          "ap1ID": "id-434",
+          "ap2ID": "id-2382"
         },
         {
           "ap2Name": "Shape 1",
