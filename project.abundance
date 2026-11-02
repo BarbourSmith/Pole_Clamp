@@ -3221,7 +3221,7 @@
             {
               "atomType": "Input",
               "x": 0.0254,
-              "y": 0.1634,
+              "y": 0.8394,
               "uniqueID": "id-2386",
               "name": "input",
               "type": "geometry",
@@ -3238,8 +3238,8 @@
             },
             {
               "atomType": "Assembly",
-              "x": 0.3452,
-              "y": 0.7127,
+              "x": 0.5767,
+              "y": 0.6648,
               "uniqueID": "id-2392",
               "ioValues": [
                 {
@@ -3261,13 +3261,17 @@
                 {
                   "name": "Shape4",
                   "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "Shape5",
+                  "ioValue": "__GEOMETRY_INPUT__"
                 }
               ]
             },
             {
               "atomType": "Difference",
-              "x": 0.6257,
-              "y": 0.5014,
+              "x": 0.6607,
+              "y": 0.4056,
               "uniqueID": "id-2412",
               "ioValues": [
                 {
@@ -3613,8 +3617,8 @@
             },
             {
               "atomType": "Move",
-              "x": 0.2474,
-              "y": 0.8845,
+              "x": 0.1872,
+              "y": 0.6451,
               "uniqueID": "id-2576",
               "ioValues": [
                 {
@@ -3638,8 +3642,8 @@
             },
             {
               "atomType": "Molecule",
-              "x": 0.1693,
-              "y": 0.862,
+              "x": 0.1005,
+              "y": 0.6535,
               "uniqueID": "id-2582",
               "name": "Bolt Hole",
               "topLevel": false,
@@ -3963,8 +3967,8 @@
             },
             {
               "atomType": "Circle",
-              "x": 0.0655,
-              "y": 0.5437,
+              "x": 0.2639,
+              "y": 0.9155,
               "uniqueID": "id-2640",
               "ioValues": [
                 {
@@ -3975,8 +3979,8 @@
             },
             {
               "atomType": "Extrude",
-              "x": 0.1898,
-              "y": 0.6282,
+              "x": 0.3538,
+              "y": 0.8732,
               "uniqueID": "id-2643",
               "ioValues": [
                 {
@@ -3987,6 +3991,56 @@
                   "name": "height",
                   "ioValue": 30,
                   "currentEquation": "30"
+                }
+              ]
+            },
+            {
+              "atomType": "Rotate",
+              "x": 0.4279,
+              "y": 0.8732,
+              "uniqueID": "id-2653",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "x-axis degrees",
+                  "ioValue": -90,
+                  "currentEquation": "-90"
+                },
+                {
+                  "name": "y-axis degrees",
+                  "ioValue": 0
+                },
+                {
+                  "name": "z-axis degrees",
+                  "ioValue": 0
+                }
+              ]
+            },
+            {
+              "atomType": "Move",
+              "x": 0.5152,
+              "y": 0.8817,
+              "uniqueID": "id-2659",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "xDist",
+                  "ioValue": 3
+                },
+                {
+                  "name": "yDist",
+                  "ioValue": 10
+                },
+                {
+                  "name": "zDist",
+                  "ioValue": 15,
+                  "currentEquation": "15"
                 }
               ]
             }
@@ -4066,6 +4120,21 @@
               "ap2Name": "geometry",
               "ap1ID": "id-2640",
               "ap2ID": "id-2643"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-2643",
+              "ap2ID": "id-2653"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-2653",
+              "ap2ID": "id-2659"
+            },
+            {
+              "ap2Name": "Shape4",
+              "ap1ID": "id-2659",
+              "ap2ID": "id-2392"
             }
           ],
           "fileTypeVersion": 1
