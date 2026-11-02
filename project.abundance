@@ -217,10 +217,6 @@
               "uniqueID": "id-178",
               "ioValues": [
                 {
-                  "name": "width",
-                  "ioValue": 30
-                },
-                {
                   "name": "pipeR",
                   "ioValue": 14.5
                 },
@@ -229,12 +225,12 @@
                   "ioValue": 6
                 },
                 {
-                  "name": "arcStart",
-                  "ioValue": -85
+                  "name": "width",
+                  "ioValue": 30
                 },
                 {
-                  "name": "tongueStart",
-                  "ioValue": -125
+                  "name": "arcStart",
+                  "ioValue": -116
                 },
                 {
                   "name": "tongueWidth",
@@ -254,7 +250,7 @@
                 },
                 {
                   "name": "forkTop",
-                  "ioValue": 28
+                  "ioValue": 32
                 },
                 {
                   "name": "slotWidth",
@@ -263,11 +259,35 @@
                 {
                   "name": "slotBottom",
                   "ioValue": 18
+                },
+                {
+                  "name": "tipWall",
+                  "ioValue": 4
+                },
+                {
+                  "name": "flareStart",
+                  "ioValue": 12
+                },
+                {
+                  "name": "flare",
+                  "ioValue": 8
+                },
+                {
+                  "name": "lipDepth",
+                  "ioValue": 1
+                },
+                {
+                  "name": "lipLength",
+                  "ioValue": 3
+                },
+                {
+                  "name": "hingeClearance",
+                  "ioValue": 0.3
                 }
               ],
               "interpreterVersion": 1,
-              "code": "/**\n * Hook Jaw, closed on a 29 mm pipe whose center is the origin; Z runs along the pipe.\n * Full-width arc from the bottom of the pipe to its right side, a straight fork up the\n * right side that takes the clamping rod, and a narrow tongue back to the lower hinge pin.\n */\nfunction run(\n  pipeR: number = 14.5,      // inner radius: closes on a 29 mm pipe\n  wall: number = 6,\n  width: number = 30,        // along the pipe\n  arcStart: number = -85,    // degrees, where the full-width arc begins\n  tongueStart: number = -125,\n  tongueWidth: number = 10,\n  pinX: number = -7, pinY: number = -24, knuckleR: number = 6,\n  forkTop: number = 28,      // top of the fork above the pipe center\n  slotWidth: number = 9,\n  slotBottom: number = 18,   // rod (8 mm) rests on this, centered 22 mm above the pipe\n): Assembly {\n  const outerR = pipeR + wall;\n  const rad = (d: number) => (d * Math.PI) / 180;\n  // Annular sector between two angles (degrees), as a drawing.\n  const sector = (a0: number, a1: number) => {\n    const pts: number[][] = [[0, 0]];\n    for (let i = 0; i <= 12; i++) {\n      const a = rad(a0 + ((a1 - a0) * i) / 12);\n      pts.push([60 * Math.cos(a), 60 * Math.sin(a)]);\n    }\n    let wedge = replicad.draw(pts[0]);\n    for (const p of pts.slice(1)) wedge = wedge.lineTo(p);\n    return replicad.drawCircle(outerR).cut(replicad.drawCircle(pipeR)).intersect(wedge.close());\n  };\n\n  const forkWall = replicad.drawRectangle(wall, forkTop).translate(pipeR + wall / 2, forkTop / 2);\n  const full = sector(arcStart, 0).fuse(forkWall).sketchOnPlane().extrude(width);\n\n  // Hinge tongue: knuckle around the pin, joined to the arc.\n  const knuckle = replicad.drawCircle(knuckleR).translate(pinX, pinY);\n  const web = replicad.draw([pinX - knuckleR * 0.7, pinY + knuckleR * 0.7])\n    .lineTo([outerR * Math.cos(rad(tongueStart)), outerR * Math.sin(rad(tongueStart))])\n    .lineTo([pipeR * Math.cos(rad(tongueStart)), pipeR * Math.sin(rad(tongueStart))])\n    .lineTo([pipeR * Math.cos(rad(arcStart)), pipeR * Math.sin(rad(arcStart))])\n    .lineTo([outerR * Math.cos(rad(arcStart)), outerR * Math.sin(rad(arcStart))])\n    .lineTo([pinX + knuckleR * 0.9, pinY - knuckleR * 0.4])\n    .close()\n    .cut(replicad.drawCircle(pipeR));\n  const tongue = sector(tongueStart, arcStart).fuse(knuckle).fuse(web)\n    .sketchOnPlane().extrude(tongueWidth).translate(0, 0, (width - tongueWidth) / 2);\n\n  // Open-ended slot in the fork for the rod (makeBaseBox is centered in X and Y).\n  const slot = replicad.makeBaseBox(wall + 2, forkTop, slotWidth)\n    .translate(pipeR + wall / 2, slotBottom + forkTop / 2, (width - slotWidth) / 2);\n  const jaw = full.fuse(tongue).cut(slot);\n  return new Assembly({ geometry: jaw });\n}\n",
-              "compiledCode": "\"use strict\";\n/**\n * Hook Jaw, closed on a 29 mm pipe whose center is the origin; Z runs along the pipe.\n * Full-width arc from the bottom of the pipe to its right side, a straight fork up the\n * right side that takes the clamping rod, and a narrow tongue back to the lower hinge pin.\n */\nfunction run(pipeR = 14.5, // inner radius: closes on a 29 mm pipe\nwall = 6, width = 30, // along the pipe\narcStart = -85, // degrees, where the full-width arc begins\ntongueStart = -125, tongueWidth = 10, pinX = -7, pinY = -24, knuckleR = 6, forkTop = 28, // top of the fork above the pipe center\nslotWidth = 9, slotBottom = 18) {\n    const outerR = pipeR + wall;\n    const rad = (d) => (d * Math.PI) / 180;\n    // Annular sector between two angles (degrees), as a drawing.\n    const sector = (a0, a1) => {\n        const pts = [[0, 0]];\n        for (let i = 0; i <= 12; i++) {\n            const a = rad(a0 + ((a1 - a0) * i) / 12);\n            pts.push([60 * Math.cos(a), 60 * Math.sin(a)]);\n        }\n        let wedge = replicad.draw(pts[0]);\n        for (const p of pts.slice(1))\n            wedge = wedge.lineTo(p);\n        return replicad.drawCircle(outerR).cut(replicad.drawCircle(pipeR)).intersect(wedge.close());\n    };\n    const forkWall = replicad.drawRectangle(wall, forkTop).translate(pipeR + wall / 2, forkTop / 2);\n    const full = sector(arcStart, 0).fuse(forkWall).sketchOnPlane().extrude(width);\n    // Hinge tongue: knuckle around the pin, joined to the arc.\n    const knuckle = replicad.drawCircle(knuckleR).translate(pinX, pinY);\n    const web = replicad.draw([pinX - knuckleR * 0.7, pinY + knuckleR * 0.7])\n        .lineTo([outerR * Math.cos(rad(tongueStart)), outerR * Math.sin(rad(tongueStart))])\n        .lineTo([pipeR * Math.cos(rad(tongueStart)), pipeR * Math.sin(rad(tongueStart))])\n        .lineTo([pipeR * Math.cos(rad(arcStart)), pipeR * Math.sin(rad(arcStart))])\n        .lineTo([outerR * Math.cos(rad(arcStart)), outerR * Math.sin(rad(arcStart))])\n        .lineTo([pinX + knuckleR * 0.9, pinY - knuckleR * 0.4])\n        .close()\n        .cut(replicad.drawCircle(pipeR));\n    const tongue = sector(tongueStart, arcStart).fuse(knuckle).fuse(web)\n        .sketchOnPlane().extrude(tongueWidth).translate(0, 0, (width - tongueWidth) / 2);\n    // Open-ended slot in the fork for the rod (makeBaseBox is centered in X and Y).\n    const slot = replicad.makeBaseBox(wall + 2, forkTop, slotWidth)\n        .translate(pipeR + wall / 2, slotBottom + forkTop / 2, (width - slotWidth) / 2);\n    const jaw = full.fuse(tongue).cut(slot);\n    return new Assembly({ geometry: jaw });\n}\n"
+              "code": "/**\n * Hook Jaw, closed on a 29 mm pipe whose center is the origin; Z runs along the pipe.\n * A full-width round hook concentric with the pipe from beside the lower hinge, around\n * the bottom, to the right side; then a fork up the right side that flares outward and\n * tapers toward its tip. A center tongue joins the hook to the hinge pin, and the hook's\n * outer layers are notched to clear the body's hinge plates. The fork's two prongs are\n * split by a slot for the rod, with small lips at the tip that narrow the slot.\n */\nfunction run(\n  pipeR: number = 14.5,      // inner radius: closes on a 29 mm pipe\n  wall: number = 6,\n  width: number = 30,        // along the pipe\n  arcStart: number = -118,   // degrees, where the round hook begins beside the hinge\n  tongueWidth: number = 10,\n  pinX: number = -7, pinY: number = -24, knuckleR: number = 6,\n  hingeClearance: number = 0.3, // gap around the body's hinge plates\n  forkTop: number = 32,      // tip of the fork above the pipe center\n  tipWall: number = 4,       // fork wall thickness at the tip\n  flareStart: number = 12,   // height where the fork starts to flare outward\n  flare: number = 8,         // outward flare angle, degrees\n  slotWidth: number = 9,\n  slotBottom: number = 18,   // rod (8 mm) rests on this, centered 22 mm above the pipe\n  lipDepth: number = 1,      // how far each tip lip narrows the slot\n  lipLength: number = 3,\n): Assembly {\n  const outerR = pipeR + wall;\n  const rad = (d: number) => (d * Math.PI) / 180;\n  const polar = (r: number, d: number) => [r * Math.cos(rad(d)), r * Math.sin(rad(d))];\n  // Annular sector between two angles (degrees), as a drawing.\n  const sector = (a0: number, a1: number) => {\n    const pts: number[][] = [[0, 0]];\n    for (let i = 0; i <= 16; i++) pts.push(polar(60, a0 + ((a1 - a0) * i) / 16));\n    let wedge = replicad.draw(pts[0]);\n    for (const p of pts.slice(1)) wedge = wedge.lineTo(p);\n    return replicad.drawCircle(outerR).cut(replicad.drawCircle(pipeR)).intersect(wedge.close());\n  };\n\n  // Fork: centerline flares outward above flareStart; wall tapers from wall to tipWall.\n  const center = (y: number) => pipeR + wall / 2 + Math.max(0, y - flareStart) * Math.tan(rad(flare));\n  const half = (y: number) => (wall + (tipWall - wall) * (y / forkTop)) / 2;\n  const ys = [0, flareStart];\n  for (let i = 1; i <= 6; i++) ys.push(flareStart + ((forkTop - flareStart) * i) / 6);\n  let fork = replicad.draw([center(0) - half(0), 0]);\n  for (const y of ys.slice(1)) fork = fork.lineTo([center(y) - half(y), y]);\n  for (const y of [...ys].reverse()) fork = fork.lineTo([center(y) + half(y), y]);\n\n  // Notch the full-width hook around the hinge so the body's plates (above and below the\n  // tongue) clear it.\n  const plateClear = replicad.drawCircle(knuckleR + hingeClearance).translate(pinX, pinY)\n    .sketchOnPlane().extrude(width);\n  const hook = sector(arcStart, 0).fuse(fork.close()).sketchOnPlane().extrude(width).cut(plateClear);\n\n  // Center tongue: knuckle around the pin, webbed to the start of the hook.\n  const knuckle = replicad.drawCircle(knuckleR).translate(pinX, pinY);\n  const web = replicad.draw([pinX - knuckleR * 0.7, pinY + knuckleR * 0.7])\n    .lineTo(polar(pipeR, arcStart))\n    .lineTo(polar(pipeR, arcStart + 12))\n    .lineTo(polar(outerR, arcStart + 12))\n    .lineTo([pinX + knuckleR * 0.9, pinY - knuckleR * 0.4])\n    .close()\n    .cut(replicad.drawCircle(pipeR));\n  const tongue = knuckle.fuse(web).sketchOnPlane().extrude(tongueWidth)\n    .translate(0, 0, (width - tongueWidth) / 2);\n\n  // Open-ended slot between the prongs (makeBaseBox is centered in X and Y), full width\n  // below the lips and narrowed by the lips over the last lipLength of the fork.\n  const slotX = center(forkTop);\n  const slotSpan = 30; // wide enough to clear the flared fork in X\n  const lower = forkTop - lipLength - slotBottom;\n  const slot = replicad.makeBaseBox(slotSpan, lower, slotWidth)\n    .translate(slotX, slotBottom + lower / 2, (width - slotWidth) / 2);\n  const lipGap = slotWidth - 2 * lipDepth;\n  const mouth = replicad.makeBaseBox(slotSpan, lipLength + 2, lipGap)\n    .translate(slotX, forkTop - lipLength + (lipLength + 2) / 2, (width - lipGap) / 2);\n  const jaw = hook.fuse(tongue).cut(slot).cut(mouth);\n  return new Assembly({ geometry: jaw });\n}\n",
+              "compiledCode": "\"use strict\";\n/**\n * Hook Jaw, closed on a 29 mm pipe whose center is the origin; Z runs along the pipe.\n * A full-width round hook concentric with the pipe from beside the lower hinge, around\n * the bottom, to the right side; then a fork up the right side that flares outward and\n * tapers toward its tip. A center tongue joins the hook to the hinge pin, and the hook's\n * outer layers are notched to clear the body's hinge plates. The fork's two prongs are\n * split by a slot for the rod, with small lips at the tip that narrow the slot.\n */\nfunction run(pipeR = 14.5, // inner radius: closes on a 29 mm pipe\nwall = 6, width = 30, // along the pipe\narcStart = -118, // degrees, where the round hook begins beside the hinge\ntongueWidth = 10, pinX = -7, pinY = -24, knuckleR = 6, hingeClearance = 0.3, // gap around the body's hinge plates\nforkTop = 32, // tip of the fork above the pipe center\ntipWall = 4, // fork wall thickness at the tip\nflareStart = 12, // height where the fork starts to flare outward\nflare = 8, // outward flare angle, degrees\nslotWidth = 9, slotBottom = 18, // rod (8 mm) rests on this, centered 22 mm above the pipe\nlipDepth = 1, // how far each tip lip narrows the slot\nlipLength = 3) {\n    const outerR = pipeR + wall;\n    const rad = (d) => (d * Math.PI) / 180;\n    const polar = (r, d) => [r * Math.cos(rad(d)), r * Math.sin(rad(d))];\n    // Annular sector between two angles (degrees), as a drawing.\n    const sector = (a0, a1) => {\n        const pts = [[0, 0]];\n        for (let i = 0; i <= 16; i++)\n            pts.push(polar(60, a0 + ((a1 - a0) * i) / 16));\n        let wedge = replicad.draw(pts[0]);\n        for (const p of pts.slice(1))\n            wedge = wedge.lineTo(p);\n        return replicad.drawCircle(outerR).cut(replicad.drawCircle(pipeR)).intersect(wedge.close());\n    };\n    // Fork: centerline flares outward above flareStart; wall tapers from wall to tipWall.\n    const center = (y) => pipeR + wall / 2 + Math.max(0, y - flareStart) * Math.tan(rad(flare));\n    const half = (y) => (wall + (tipWall - wall) * (y / forkTop)) / 2;\n    const ys = [0, flareStart];\n    for (let i = 1; i <= 6; i++)\n        ys.push(flareStart + ((forkTop - flareStart) * i) / 6);\n    let fork = replicad.draw([center(0) - half(0), 0]);\n    for (const y of ys.slice(1))\n        fork = fork.lineTo([center(y) - half(y), y]);\n    for (const y of [...ys].reverse())\n        fork = fork.lineTo([center(y) + half(y), y]);\n    // Notch the full-width hook around the hinge so the body's plates (above and below the\n    // tongue) clear it.\n    const plateClear = replicad.drawCircle(knuckleR + hingeClearance).translate(pinX, pinY)\n        .sketchOnPlane().extrude(width);\n    const hook = sector(arcStart, 0).fuse(fork.close()).sketchOnPlane().extrude(width).cut(plateClear);\n    // Center tongue: knuckle around the pin, webbed to the start of the hook.\n    const knuckle = replicad.drawCircle(knuckleR).translate(pinX, pinY);\n    const web = replicad.draw([pinX - knuckleR * 0.7, pinY + knuckleR * 0.7])\n        .lineTo(polar(pipeR, arcStart))\n        .lineTo(polar(pipeR, arcStart + 12))\n        .lineTo(polar(outerR, arcStart + 12))\n        .lineTo([pinX + knuckleR * 0.9, pinY - knuckleR * 0.4])\n        .close()\n        .cut(replicad.drawCircle(pipeR));\n    const tongue = knuckle.fuse(web).sketchOnPlane().extrude(tongueWidth)\n        .translate(0, 0, (width - tongueWidth) / 2);\n    // Open-ended slot between the prongs (makeBaseBox is centered in X and Y), full width\n    // below the lips and narrowed by the lips over the last lipLength of the fork.\n    const slotX = center(forkTop);\n    const slotSpan = 30; // wide enough to clear the flared fork in X\n    const lower = forkTop - lipLength - slotBottom;\n    const slot = replicad.makeBaseBox(slotSpan, lower, slotWidth)\n        .translate(slotX, slotBottom + lower / 2, (width - slotWidth) / 2);\n    const lipGap = slotWidth - 2 * lipDepth;\n    const mouth = replicad.makeBaseBox(slotSpan, lipLength + 2, lipGap)\n        .translate(slotX, forkTop - lipLength + (lipLength + 2) / 2, (width - lipGap) / 2);\n    const jaw = hook.fuse(tongue).cut(slot).cut(mouth);\n    return new Assembly({ geometry: jaw });\n}\n"
             }
           ],
           "allConnectors": [
@@ -327,7 +347,7 @@
                   "ioValues": [
                     {
                       "name": "pivotX",
-                      "ioValue": 37.5
+                      "ioValue": 39.2
                     },
                     {
                       "name": "pivotY",
@@ -470,7 +490,7 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": 36.41
+                      "ioValue": 38.11
                     },
                     {
                       "name": "yDist",
@@ -603,7 +623,7 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": 37.5
+                      "ioValue": 39.2
                     },
                     {
                       "name": "yDist",
@@ -719,7 +739,7 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": 20.5
+                      "ioValue": 22.2
                     },
                     {
                       "name": "yDist",
@@ -765,6 +785,33 @@
               "topLevel": false,
               "allAtoms": [
                 {
+                  "atomType": "Code",
+                  "x": 0.3,
+                  "y": 0.5,
+                  "uniqueID": "id-1165",
+                  "ioValues": [
+                    {
+                      "name": "coilOD",
+                      "ioValue": 11
+                    },
+                    {
+                      "name": "wireD",
+                      "ioValue": 1.2
+                    },
+                    {
+                      "name": "length",
+                      "ioValue": 15
+                    },
+                    {
+                      "name": "turns",
+                      "ioValue": 6
+                    }
+                  ],
+                  "interpreterVersion": 1,
+                  "code": "/**\n * Compression spring around the clamping rod: round wire swept along a helix, axis on Z\n * from z = 0 to length. Falls back to stacked rings if the sweep fails.\n */\nfunction run(\n  coilOD: number = 11,   // outer diameter, measured from the photos\n  wireD: number = 1.2,\n  length: number = 15,   // compressed length, nut to fork\n  turns: number = 6,\n): Assembly {\n  const R = (coilOD - wireD) / 2;\n  const travel = length - wireD;\n  const pitch = travel / turns;\n  let coil;\n  try {\n    const spine = replicad.makeHelix(pitch, travel, R);\n    const profile = replicad.drawCircle(wireD / 2).sketchOnPlane(\"XZ\", [R, 0, 0]);\n    coil = replicad.genericSweep(profile.wire, spine, { frenet: true }, false);\n  } catch (e) {\n    console.warn(\"Helix sweep failed, using rings:\", e);\n    const ring = replicad.drawCircle(wireD / 2).translate(R, 0).sketchOnPlane(\"XZ\").revolve();\n    coil = ring;\n    for (let i = 1; i <= turns; i++) coil = coil.fuse(ring.clone().translate(0, 0, pitch * i));\n  }\n  return new Assembly({ geometry: coil.translate(0, 0, wireD / 2) });\n}\n",
+                  "compiledCode": "\"use strict\";\n/**\n * Compression spring around the clamping rod: round wire swept along a helix, axis on Z\n * from z = 0 to length. Falls back to stacked rings if the sweep fails.\n */\nfunction run(coilOD = 11, // outer diameter, measured from the photos\nwireD = 1.2, length = 15, // compressed length, nut to fork\nturns = 6) {\n    const R = (coilOD - wireD) / 2;\n    const travel = length - wireD;\n    const pitch = travel / turns;\n    let coil;\n    try {\n        const spine = replicad.makeHelix(pitch, travel, R);\n        const profile = replicad.drawCircle(wireD / 2).sketchOnPlane(\"XZ\", [R, 0, 0]);\n        coil = replicad.genericSweep(profile.wire, spine, { frenet: true }, false);\n    }\n    catch (e) {\n        console.warn(\"Helix sweep failed, using rings:\", e);\n        const ring = replicad.drawCircle(wireD / 2).translate(R, 0).sketchOnPlane(\"XZ\").revolve();\n        coil = ring;\n        for (let i = 1; i <= turns; i++)\n            coil = coil.fuse(ring.clone().translate(0, 0, pitch * i));\n    }\n    return new Assembly({ geometry: coil.translate(0, 0, wireD / 2) });\n}\n"
+                },
+                {
                   "atomType": "Output",
                   "x": 1,
                   "y": 0.5,
@@ -773,62 +820,6 @@
                     {
                       "name": "number or geometry",
                       "ioValue": "__GEOMETRY_INPUT__"
-                    }
-                  ]
-                },
-                {
-                  "atomType": "Circle",
-                  "x": 0.1,
-                  "y": 0.4,
-                  "uniqueID": "id-277",
-                  "ioValues": [
-                    {
-                      "name": "diameter",
-                      "ioValue": 11
-                    }
-                  ]
-                },
-                {
-                  "atomType": "Circle",
-                  "x": 0.1,
-                  "y": 0.7,
-                  "uniqueID": "id-280",
-                  "ioValues": [
-                    {
-                      "name": "diameter",
-                      "ioValue": 8.6
-                    }
-                  ]
-                },
-                {
-                  "atomType": "Difference",
-                  "x": 0.3,
-                  "y": 0.5,
-                  "uniqueID": "id-283",
-                  "ioValues": [
-                    {
-                      "name": "retain",
-                      "ioValue": "__GEOMETRY_INPUT__"
-                    },
-                    {
-                      "name": "remove",
-                      "ioValue": "__GEOMETRY_INPUT__"
-                    }
-                  ]
-                },
-                {
-                  "atomType": "Extrude",
-                  "x": 0.5,
-                  "y": 0.5,
-                  "uniqueID": "id-287",
-                  "ioValues": [
-                    {
-                      "name": "geometry",
-                      "ioValue": "__GEOMETRY_INPUT__"
-                    },
-                    {
-                      "name": "height",
-                      "ioValue": 14
                     }
                   ]
                 },
@@ -883,23 +874,8 @@
               ],
               "allConnectors": [
                 {
-                  "ap2Name": "retain",
-                  "ap1ID": "id-277",
-                  "ap2ID": "id-283"
-                },
-                {
-                  "ap2Name": "remove",
-                  "ap1ID": "id-280",
-                  "ap2ID": "id-283"
-                },
-                {
                   "ap2Name": "geometry",
-                  "ap1ID": "id-283",
-                  "ap2ID": "id-287"
-                },
-                {
-                  "ap2Name": "geometry",
-                  "ap1ID": "id-287",
+                  "ap1ID": "id-1165",
                   "ap2ID": "id-291"
                 },
                 {
@@ -959,7 +935,7 @@
                     },
                     {
                       "name": "height",
-                      "ioValue": 43.9
+                      "ioValue": 45.6
                     }
                   ]
                 },
@@ -1064,8 +1040,7 @@
                   "ioValues": [
                     {
                       "name": "diameter",
-                      "ioValue": 10,
-                      "currentEquation": "10"
+                      "ioValue": 10
                     }
                   ]
                 },
@@ -1081,8 +1056,7 @@
                     },
                     {
                       "name": "height",
-                      "ioValue": 10,
-                      "currentEquation": "10"
+                      "ioValue": 10
                     }
                   ]
                 },
@@ -1219,6 +1193,96 @@
           "topLevel": false,
           "allAtoms": [
             {
+              "atomType": "RegularPolygon",
+              "x": 0.2,
+              "y": 0.8,
+              "uniqueID": "id-1178",
+              "ioValues": [
+                {
+                  "name": "number of sides",
+                  "ioValue": 6,
+                  "currentEquation": "6"
+                },
+                {
+                  "name": "diameter",
+                  "ioValue": 2.9
+                }
+              ]
+            },
+            {
+              "atomType": "Extrude",
+              "x": 0.4,
+              "y": 0.8,
+              "uniqueID": "id-1182",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "height",
+                  "ioValue": 3
+                }
+              ]
+            },
+            {
+              "atomType": "Move",
+              "x": 0.5,
+              "y": 0.9,
+              "uniqueID": "id-1186",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "xDist",
+                  "ioValue": 0
+                },
+                {
+                  "name": "yDist",
+                  "ioValue": 0
+                },
+                {
+                  "name": "zDist",
+                  "ioValue": 27
+                }
+              ]
+            },
+            {
+              "atomType": "Fusion",
+              "x": 0.7,
+              "y": 0.8,
+              "uniqueID": "id-1192",
+              "ioValues": [
+                {
+                  "name": "Shape 1",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "Shape2",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ],
+              "unionType": "Fusion"
+            },
+            {
+              "atomType": "Difference",
+              "x": 0.8,
+              "y": 0.5,
+              "uniqueID": "id-1197",
+              "ioValues": [
+                {
+                  "name": "retain",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "remove",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ]
+            },
+            {
               "atomType": "Output",
               "x": 1,
               "y": 0.5,
@@ -1262,13 +1326,43 @@
           "allConnectors": [
             {
               "ap2Name": "geometry",
+              "ap1ID": "id-1178",
+              "ap2ID": "id-1182"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1182",
+              "ap2ID": "id-1186"
+            },
+            {
+              "ap2Name": "Shape 1",
+              "ap1ID": "id-1182",
+              "ap2ID": "id-1192"
+            },
+            {
+              "ap2Name": "Shape2",
+              "ap1ID": "id-1186",
+              "ap2ID": "id-1192"
+            },
+            {
+              "ap2Name": "remove",
+              "ap1ID": "id-1192",
+              "ap2ID": "id-1197"
+            },
+            {
+              "ap2Name": "number or geometry",
+              "ap1ID": "id-1197",
+              "ap2ID": "id-355"
+            },
+            {
+              "ap2Name": "geometry",
               "ap1ID": "id-357",
               "ap2ID": "id-360"
             },
             {
-              "ap2Name": "number or geometry",
+              "ap2Name": "retain",
               "ap1ID": "id-360",
-              "ap2ID": "id-355"
+              "ap2ID": "id-1197"
             }
           ],
           "fileTypeVersion": 1
@@ -1349,8 +1443,7 @@
               "ioValues": [
                 {
                   "name": "number of sides",
-                  "ioValue": 6,
-                  "currentEquation": "6"
+                  "ioValue": 6
                 },
                 {
                   "name": "diameter",
@@ -1744,6 +1837,262 @@
       "topLevel": false,
       "allAtoms": [
         {
+          "atomType": "Molecule",
+          "x": 0.2,
+          "y": 0.7,
+          "uniqueID": "id-1236",
+          "name": "Bolt",
+          "topLevel": false,
+          "allAtoms": [
+            {
+              "atomType": "Output",
+              "x": 1,
+              "y": 0.5,
+              "uniqueID": "id-1238",
+              "ioValues": [
+                {
+                  "name": "number or geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ]
+            },
+            {
+              "atomType": "RegularPolygon",
+              "x": 0.2,
+              "y": 0.3,
+              "uniqueID": "id-1244",
+              "ioValues": [
+                {
+                  "name": "number of sides",
+                  "ioValue": 6
+                },
+                {
+                  "name": "diameter",
+                  "ioValue": 14.5,
+                  "currentEquation": "14.5"
+                }
+              ]
+            },
+            {
+              "atomType": "Extrude",
+              "x": 0.4,
+              "y": 0.3,
+              "uniqueID": "id-1248",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "height",
+                  "ioValue": 5.3,
+                  "currentEquation": "5.3"
+                }
+              ]
+            },
+            {
+              "atomType": "Circle",
+              "x": 0.3,
+              "y": 0.6,
+              "uniqueID": "id-1252",
+              "ioValues": [
+                {
+                  "name": "diameter",
+                  "ioValue": 7.7,
+                  "currentEquation": "7.7"
+                }
+              ]
+            },
+            {
+              "atomType": "Extrude",
+              "x": 0.4,
+              "y": 0.5,
+              "uniqueID": "id-1255",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "height",
+                  "ioValue": 35,
+                  "currentEquation": "35"
+                }
+              ]
+            },
+            {
+              "atomType": "Fusion",
+              "x": 0.6,
+              "y": 0.3,
+              "uniqueID": "id-1259",
+              "ioValues": [
+                {
+                  "name": "Shape 1",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "Shape2",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ],
+              "unionType": "Fusion"
+            },
+            {
+              "atomType": "Move",
+              "x": 0.5,
+              "y": 0.5,
+              "uniqueID": "id-1289",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "xDist",
+                  "ioValue": 0
+                },
+                {
+                  "name": "yDist",
+                  "ioValue": 0
+                },
+                {
+                  "name": "zDist",
+                  "ioValue": 0.3,
+                  "currentEquation": "0.3"
+                }
+              ]
+            },
+            {
+              "atomType": "Color",
+              "x": 0.7,
+              "y": 0.6,
+              "uniqueID": "id-1295",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ],
+              "selectedColor": "Light Blue"
+            }
+          ],
+          "allConnectors": [
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1244",
+              "ap2ID": "id-1248"
+            },
+            {
+              "ap2Name": "Shape2",
+              "ap1ID": "id-1248",
+              "ap2ID": "id-1259"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1252",
+              "ap2ID": "id-1255"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1255",
+              "ap2ID": "id-1289"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1259",
+              "ap2ID": "id-1295"
+            },
+            {
+              "ap2Name": "Shape 1",
+              "ap1ID": "id-1289",
+              "ap2ID": "id-1259"
+            },
+            {
+              "ap2Name": "number or geometry",
+              "ap1ID": "id-1295",
+              "ap2ID": "id-1238"
+            }
+          ],
+          "fileTypeVersion": 1
+        },
+        {
+          "atomType": "Rotate",
+          "x": 0.3,
+          "y": 0.7,
+          "uniqueID": "id-1264",
+          "ioValues": [
+            {
+              "name": "geometry",
+              "ioValue": "__GEOMETRY_INPUT__"
+            },
+            {
+              "name": "x-axis degrees",
+              "ioValue": 0,
+              "currentEquation": "0"
+            },
+            {
+              "name": "y-axis degrees",
+              "ioValue": 0,
+              "currentEquation": "0"
+            },
+            {
+              "name": "z-axis degrees",
+              "ioValue": 30,
+              "currentEquation": "30"
+            }
+          ]
+        },
+        {
+          "atomType": "Rotate",
+          "x": 0.4,
+          "y": 0.7,
+          "uniqueID": "id-1276",
+          "ioValues": [
+            {
+              "name": "geometry",
+              "ioValue": "__GEOMETRY_INPUT__"
+            },
+            {
+              "name": "x-axis degrees",
+              "ioValue": 0
+            },
+            {
+              "name": "y-axis degrees",
+              "ioValue": -90,
+              "currentEquation": "-90"
+            },
+            {
+              "name": "z-axis degrees",
+              "ioValue": 0
+            }
+          ]
+        },
+        {
+          "atomType": "Move",
+          "x": 0.5,
+          "y": 0.7,
+          "uniqueID": "id-1282",
+          "ioValues": [
+            {
+              "name": "geometry",
+              "ioValue": "__GEOMETRY_INPUT__"
+            },
+            {
+              "name": "xDist",
+              "ioValue": -11
+            },
+            {
+              "name": "yDist",
+              "ioValue": 0
+            },
+            {
+              "name": "zDist",
+              "ioValue": 15,
+              "currentEquation": "15"
+            }
+          ]
+        },
+        {
           "atomType": "Output",
           "x": 1,
           "y": 0.5,
@@ -1757,8 +2106,8 @@
         },
         {
           "atomType": "Molecule",
-          "x": 0.3,
-          "y": 0.4,
+          "x": 0.2,
+          "y": 0.2,
           "uniqueID": "id-434",
           "name": "Clamp Body",
           "topLevel": false,
@@ -1783,8 +2132,7 @@
               "ioValues": [
                 {
                   "name": "diameter",
-                  "ioValue": 9.8,
-                  "currentEquation": "9.8"
+                  "ioValue": 9.8
                 }
               ]
             },
@@ -1828,8 +2176,7 @@
                 },
                 {
                   "name": "yDist",
-                  "ioValue": -20,
-                  "currentEquation": "-20"
+                  "ioValue": -20
                 },
                 {
                   "name": "zDist",
@@ -1845,13 +2192,11 @@
               "ioValues": [
                 {
                   "name": "x length",
-                  "ioValue": 24.8,
-                  "currentEquation": "24.8"
+                  "ioValue": 24.8
                 },
                 {
                   "name": "y length",
-                  "ioValue": 24.8,
-                  "currentEquation": "24.8"
+                  "ioValue": 24.8
                 }
               ]
             },
@@ -1888,13 +2233,11 @@
               "ioValues": [
                 {
                   "name": "x length",
-                  "ioValue": 12.8,
-                  "currentEquation": "12.8"
+                  "ioValue": 12.8
                 },
                 {
                   "name": "y length",
-                  "ioValue": 12.8,
-                  "currentEquation": "12.8"
+                  "ioValue": 12.8
                 }
               ]
             },
@@ -1923,8 +2266,7 @@
               "ioValues": [
                 {
                   "name": "OD",
-                  "ioValue": 42.2,
-                  "currentEquation": "42.2"
+                  "ioValue": 42.2
                 },
                 {
                   "name": "ID",
@@ -2225,13 +2567,11 @@
               "ioValues": [
                 {
                   "name": "x length",
-                  "ioValue": 500,
-                  "currentEquation": "500"
+                  "ioValue": 500
                 },
                 {
                   "name": "y length",
-                  "ioValue": 500,
-                  "currentEquation": "500"
+                  "ioValue": 500
                 }
               ]
             },
@@ -2247,8 +2587,7 @@
                 },
                 {
                   "name": "xDist",
-                  "ioValue": 250,
-                  "currentEquation": "250"
+                  "ioValue": 250
                 },
                 {
                   "name": "yDist",
@@ -2289,8 +2628,7 @@
                 },
                 {
                   "name": "height",
-                  "ioValue": 30,
-                  "currentEquation": "30"
+                  "ioValue": 30
                 }
               ]
             }
@@ -2430,17 +2768,139 @@
             {
               "name": "Shape3",
               "ioValue": "__GEOMETRY_INPUT__"
+            },
+            {
+              "name": "Shape4",
+              "ioValue": "__GEOMETRY_INPUT__"
             }
           ]
         },
         {
           "atomType": "Molecule",
           "x": 0.3,
-          "y": 0.7,
+          "y": 0.4,
           "uniqueID": "id-604",
           "name": "Clasp",
           "topLevel": false,
           "allAtoms": [
+            {
+              "atomType": "Rectangle",
+              "x": 0.4,
+              "y": 0.9,
+              "uniqueID": "id-1206",
+              "ioValues": [
+                {
+                  "name": "x length",
+                  "ioValue": 15,
+                  "currentEquation": "15"
+                },
+                {
+                  "name": "y length",
+                  "ioValue": 15,
+                  "currentEquation": "15"
+                }
+              ]
+            },
+            {
+              "atomType": "Extrude",
+              "x": 0.5,
+              "y": 0.9,
+              "uniqueID": "id-1210",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "height",
+                  "ioValue": 8,
+                  "currentEquation": "8"
+                }
+              ]
+            },
+            {
+              "atomType": "Move",
+              "x": 0.6,
+              "y": 0.7,
+              "uniqueID": "id-1214",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "xDist",
+                  "ioValue": 0,
+                  "currentEquation": "0"
+                },
+                {
+                  "name": "yDist",
+                  "ioValue": -20,
+                  "currentEquation": "-20"
+                },
+                {
+                  "name": "zDist",
+                  "ioValue": 0
+                }
+              ]
+            },
+            {
+              "atomType": "Difference",
+              "x": 0.7,
+              "y": 0.6,
+              "uniqueID": "id-1220",
+              "ioValues": [
+                {
+                  "name": "retain",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "remove",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ]
+            },
+            {
+              "atomType": "Move",
+              "x": 0.6,
+              "y": 0.9,
+              "uniqueID": "id-1224",
+              "ioValues": [
+                {
+                  "name": "geometry",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "xDist",
+                  "ioValue": 0
+                },
+                {
+                  "name": "yDist",
+                  "ioValue": -20
+                },
+                {
+                  "name": "zDist",
+                  "ioValue": 22
+                }
+              ]
+            },
+            {
+              "atomType": "Fusion",
+              "x": 0.7,
+              "y": 0.8,
+              "uniqueID": "id-1230",
+              "ioValues": [
+                {
+                  "name": "Shape 1",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                },
+                {
+                  "name": "Shape2",
+                  "ioValue": "__GEOMETRY_INPUT__"
+                }
+              ],
+              "unionType": "Fusion"
+            },
             {
               "atomType": "Output",
               "x": 1,
@@ -2515,6 +2975,141 @@
               "topLevel": false,
               "allAtoms": [
                 {
+                  "atomType": "Rectangle",
+                  "x": 0.1,
+                  "y": 0.5,
+                  "uniqueID": "id-1135",
+                  "ioValues": [
+                    {
+                      "name": "x length",
+                      "ioValue": 5,
+                      "currentEquation": "5"
+                    },
+                    {
+                      "name": "y length",
+                      "ioValue": 5,
+                      "currentEquation": "5"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Rectangle",
+                  "x": 0.1,
+                  "y": 0.2,
+                  "uniqueID": "id-1139",
+                  "ioValues": [
+                    {
+                      "name": "x length",
+                      "ioValue": 2.5,
+                      "currentEquation": "2.5"
+                    },
+                    {
+                      "name": "y length",
+                      "ioValue": 2.5,
+                      "currentEquation": "2.5"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Move",
+                  "x": 0.2,
+                  "y": 0.2,
+                  "uniqueID": "id-1143",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "xDist",
+                      "ioValue": 0
+                    },
+                    {
+                      "name": "yDist",
+                      "ioValue": 18,
+                      "currentEquation": "18"
+                    },
+                    {
+                      "name": "zDist",
+                      "ioValue": 0
+                    }
+                  ]
+                },
+                {
+                  "atomType": "ShrinkWrap",
+                  "x": 0.3,
+                  "y": 0.4,
+                  "uniqueID": "id-1149",
+                  "name": "Shrink Wrap",
+                  "ioValues": [
+                    {
+                      "name": "Shape 1",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape2",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape3",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape 1",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape2",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape3",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Move",
+                  "x": 0.3,
+                  "y": 0.4,
+                  "uniqueID": "id-1159",
+                  "ioValues": [
+                    {
+                      "name": "geometry",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "xDist",
+                      "ioValue": 10
+                    },
+                    {
+                      "name": "yDist",
+                      "ioValue": 16
+                    },
+                    {
+                      "name": "zDist",
+                      "ioValue": 0
+                    }
+                  ]
+                },
+                {
+                  "atomType": "Fusion",
+                  "x": 0.6,
+                  "y": 0.3,
+                  "uniqueID": "id-1201",
+                  "ioValues": [
+                    {
+                      "name": "Shape 1",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    },
+                    {
+                      "name": "Shape2",
+                      "ioValue": "__GEOMETRY_INPUT__"
+                    }
+                  ],
+                  "unionType": "Fusion"
+                },
+                {
                   "atomType": "Output",
                   "x": 1,
                   "y": 0.5,
@@ -2529,7 +3124,7 @@
                 {
                   "atomType": "GitHubMolecule",
                   "x": 0.4,
-                  "y": 0.2,
+                  "y": 0.8,
                   "uniqueID": "id-652",
                   "name": "Concentric_Circles",
                   "ioValues": [
@@ -2675,26 +3270,24 @@
                 },
                 {
                   "atomType": "Rectangle",
-                  "x": 0.3,
+                  "x": 0.1,
                   "y": 0.8,
                   "uniqueID": "id-674",
                   "ioValues": [
                     {
                       "name": "x length",
-                      "ioValue": 100,
-                      "currentEquation": "100"
+                      "ioValue": 100
                     },
                     {
                       "name": "y length",
-                      "ioValue": 100,
-                      "currentEquation": "100"
+                      "ioValue": 100
                     }
                   ]
                 },
                 {
                   "atomType": "Move",
-                  "x": 0.4,
-                  "y": 0.7,
+                  "x": 0.2,
+                  "y": 0.6,
                   "uniqueID": "id-678",
                   "ioValues": [
                     {
@@ -2703,8 +3296,7 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": -50,
-                      "currentEquation": "-50"
+                      "ioValue": -50
                     },
                     {
                       "name": "yDist",
@@ -2734,7 +3326,7 @@
                 },
                 {
                   "atomType": "Move",
-                  "x": 0.5,
+                  "x": 0.3,
                   "y": 0.8,
                   "uniqueID": "id-688",
                   "ioValues": [
@@ -2744,13 +3336,11 @@
                     },
                     {
                       "name": "xDist",
-                      "ioValue": 8,
-                      "currentEquation": "8"
+                      "ioValue": 8
                     },
                     {
                       "name": "yDist",
-                      "ioValue": 50,
-                      "currentEquation": "50"
+                      "ioValue": 50
                     },
                     {
                       "name": "zDist",
@@ -2760,8 +3350,8 @@
                 },
                 {
                   "atomType": "Fusion",
-                  "x": 0.5,
-                  "y": 0.8,
+                  "x": 0.4,
+                  "y": 0.6,
                   "uniqueID": "id-694",
                   "ioValues": [
                     {
@@ -2777,6 +3367,36 @@
                 }
               ],
               "allConnectors": [
+                {
+                  "ap2Name": "Shape2",
+                  "ap1ID": "id-1135",
+                  "ap2ID": "id-1149"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1139",
+                  "ap2ID": "id-1143"
+                },
+                {
+                  "ap2Name": "Shape 1",
+                  "ap1ID": "id-1143",
+                  "ap2ID": "id-1149"
+                },
+                {
+                  "ap2Name": "geometry",
+                  "ap1ID": "id-1149",
+                  "ap2ID": "id-1159"
+                },
+                {
+                  "ap2Name": "Shape2",
+                  "ap1ID": "id-1159",
+                  "ap2ID": "id-1201"
+                },
+                {
+                  "ap2Name": "number or geometry",
+                  "ap1ID": "id-1201",
+                  "ap2ID": "id-650"
+                },
                 {
                   "ap2Name": "retain",
                   "ap1ID": "id-652",
@@ -2798,9 +3418,9 @@
                   "ap2ID": "id-694"
                 },
                 {
-                  "ap2Name": "number or geometry",
+                  "ap2Name": "Shape 1",
                   "ap1ID": "id-684",
-                  "ap2ID": "id-650"
+                  "ap2ID": "id-1201"
                 },
                 {
                   "ap2Name": "Shape 1",
@@ -2817,8 +3437,8 @@
             },
             {
               "atomType": "Extrude",
-              "x": 0.7,
-              "y": 0.7,
+              "x": 0.6,
+              "y": 0.3,
               "uniqueID": "id-701",
               "ioValues": [
                 {
@@ -2827,13 +3447,47 @@
                 },
                 {
                   "name": "height",
-                  "ioValue": 30,
-                  "currentEquation": "30"
+                  "ioValue": 30
                 }
               ]
             }
           ],
           "allConnectors": [
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1206",
+              "ap2ID": "id-1210"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1210",
+              "ap2ID": "id-1214"
+            },
+            {
+              "ap2Name": "geometry",
+              "ap1ID": "id-1210",
+              "ap2ID": "id-1224"
+            },
+            {
+              "ap2Name": "Shape2",
+              "ap1ID": "id-1214",
+              "ap2ID": "id-1230"
+            },
+            {
+              "ap2Name": "number or geometry",
+              "ap1ID": "id-1220",
+              "ap2ID": "id-606"
+            },
+            {
+              "ap2Name": "Shape 1",
+              "ap1ID": "id-1224",
+              "ap2ID": "id-1230"
+            },
+            {
+              "ap2Name": "remove",
+              "ap1ID": "id-1230",
+              "ap2ID": "id-1220"
+            },
             {
               "ap2Name": "geometry",
               "ap1ID": "id-608",
@@ -2855,15 +3509,35 @@
               "ap2ID": "id-644"
             },
             {
-              "ap2Name": "number or geometry",
+              "ap2Name": "retain",
               "ap1ID": "id-701",
-              "ap2ID": "id-606"
+              "ap2ID": "id-1220"
             }
           ],
           "fileTypeVersion": 1
         }
       ],
       "allConnectors": [
+        {
+          "ap2Name": "geometry",
+          "ap1ID": "id-1236",
+          "ap2ID": "id-1264"
+        },
+        {
+          "ap2Name": "geometry",
+          "ap1ID": "id-1264",
+          "ap2ID": "id-1276"
+        },
+        {
+          "ap2Name": "geometry",
+          "ap1ID": "id-1276",
+          "ap2ID": "id-1282"
+        },
+        {
+          "ap2Name": "Shape3",
+          "ap1ID": "id-1282",
+          "ap2ID": "id-568"
+        },
         {
           "ap2Name": "Shape 1",
           "ap1ID": "id-434",

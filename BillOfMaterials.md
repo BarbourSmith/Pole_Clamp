@@ -2,7 +2,7 @@
 # Bill Of Materials 
  |Part|Number Needed|Price|Source| 
  |----|----------|-----|-----|
-|Stage lighting quick-lock clamp for 25-29 mm pipe, aluminum, silver (LBKYJ, sold as 2-pack)|1|$14.50|[Amazon](https://www.amazon.com/dp/B0F9YBP2RT?tag=maslowcnc01-20)|
-|Total: |1|$14.50| |
+|Stage lighting quick-lock clamp for 25-29 mm pipe, aluminum, silver (LBKYJ, sold as 2-pack)|6|$87.00|[Amazon](https://www.amazon.com/dp/B0F9YBP2RT?tag=maslowcnc01-20)|
+|Total: |6|$87.00| |
 
 _Amazon links in this list are affiliate links to fund development_
